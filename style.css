@@ -1,0 +1,386 @@
+/* ==========================================================================
+   BioFidelidade SaaS - Design System & Multi-Tenant Mobile UI
+   Target: seudominio.com/[slug]
+   ========================================================================== */
+
+:root {
+  /* Dynamic Tenant Primary Color */
+  --tenant-primary: #10b981;
+  --tenant-primary-hover: #059669;
+  --tenant-glow: rgba(16, 185, 129, 0.25);
+
+  /* Dark Theme Base */
+  --bg-body: #0b0f17;
+  --bg-card: rgba(18, 24, 38, 0.85);
+  --bg-card-hover: rgba(26, 35, 54, 0.95);
+  --bg-input: rgba(10, 14, 23, 0.9);
+  --border-color: rgba(255, 255, 255, 0.08);
+  
+  /* Text Colors */
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  /* Status */
+  --open-green: #10b981;
+  --closed-red: #ef4444;
+  --warning-yellow: #f59e0b;
+
+  /* Typography & Layout */
+  --font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+  
+  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-family);
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+  background: 
+    radial-gradient(circle at 50% 0%, var(--tenant-glow) 0%, transparent 60%),
+    var(--bg-body);
+  background-attachment: fixed;
+}
+
+/* Mobile-First Container (Max 480px width for Instagram bio look) */
+.mobile-wrapper {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  padding: 1.25rem 1rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.full-wrapper {
+  width: 92%;
+  max-width: 1200px;
+  padding: 2rem 1rem;
+}
+
+/* Glassmorphism Cards */
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-card);
+  transition: var(--transition);
+}
+
+/* Header & Tenant Profile */
+.profile-header {
+  text-align: center;
+  position: relative;
+}
+
+.tenant-banner {
+  width: 100%;
+  height: 120px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+  margin-bottom: -40px;
+}
+
+.tenant-avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: #1e293b;
+  border: 3px solid var(--tenant-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  margin: 0 auto 0.75rem;
+  box-shadow: 0 0 20px var(--tenant-glow);
+  position: relative;
+  z-index: 2;
+}
+
+.tenant-name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.tenant-bio {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+/* Status Badge Aberto / Fechado */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin: 0.6rem 0 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.status-pill.open {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--open-green);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.status-pill.closed {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--closed-red);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-pill.open .status-dot {
+  background: var(--open-green);
+  box-shadow: 0 0 8px var(--open-green);
+}
+
+.status-pill.closed .status-dot {
+  background: var(--closed-red);
+}
+
+/* CTA Action Buttons */
+.btn-action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.9rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-size: 0.98rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.btn-primary-action {
+  background: linear-gradient(135deg, var(--tenant-primary) 0%, var(--tenant-primary-hover) 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 16px var(--tenant-glow);
+}
+
+.btn-primary-action:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.btn-secondary-action {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary-action:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Photo Highlights Cards */
+.highlights-container {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.4rem;
+  scroll-snap-type: x mandatory;
+}
+
+.highlight-card {
+  min-width: 160px;
+  max-width: 160px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+  transition: var(--transition);
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+}
+
+.highlight-card:hover {
+  border-color: var(--tenant-primary);
+  transform: translateY(-2px);
+}
+
+.highlight-img {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+}
+
+.highlight-body {
+  padding: 0.6rem;
+}
+
+.highlight-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.highlight-price {
+  font-size: 0.8rem;
+  color: var(--tenant-primary);
+  font-weight: 800;
+  margin-top: 0.2rem;
+}
+
+/* Payment Badges Grid */
+.payment-pills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.payment-pill {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+}
+
+/* Review / Social Proof Card */
+.review-rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+/* Forms & Inputs */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--tenant-primary);
+  box-shadow: 0 0 0 3px var(--tenant-glow);
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: var(--transition);
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-box {
+  background: #111726;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 420px;
+  padding: 1.5rem;
+  transform: scale(0.95);
+  transition: var(--transition);
+}
+
+.modal-overlay.active .modal-box {
+  transform: scale(1);
+}
+
+/* Switcher Toolbar for Testing Multi-Tenants */
+.tenant-switcher-bar {
+  background: #070a10;
+  border-bottom: 1px solid var(--border-color);
+  width: 100%;
+  padding: 0.6rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.tenant-switcher-select {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
+  color: #fff;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+}

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BioFidelidade | Central de Relacionamento & Link da Bio</title>
+  <meta name="description" content="Plataforma de cupons, localização e conversão no link da bio do Instagram.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Multi-Tenant Switcher Bar -->
+  <div class="tenant-switcher-bar">
+    <span>🌐 <strong>BioFidelidade SaaS</strong> (Link da Bio)</span>
+    <div>
+      <label for="tenant-select" style="font-size: 0.78rem;">Empresa:</label>
+      <select id="tenant-select" class="tenant-switcher-select" onchange="switchTenant(this.value)">
+        <option value="pizzariacentral" selected>🍕 Pizzaria Central</option>
+        <option value="lojamarina">👗 Loja Marina Moda</option>
+        <option value="barbeariax">💈 Barbearia Alfa</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Mobile Wrapper Container -->
+  <div class="mobile-wrapper">
+
+    <!-- Customer Session Wallet Badge -->
+    <div id="customer-wallet-badge" style="display: none;">
+      <!-- Populated dynamically by JS -->
+    </div>
+
+    <!-- Profile Header Card -->
+    <div class="glass-card profile-header">
+      <img id="tenant-banner-img" class="tenant-banner" src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800" alt="Banner Empresa">
+      <div id="tenant-logo" class="tenant-avatar">🍕</div>
+      
+      <h1 id="tenant-name" class="tenant-name">Pizzaria Central</h1>
+      <p id="tenant-bio" class="tenant-bio">Pizza artesanal feita para você ❤️</p>
+
+      <!-- Status Pill -->
+      <div id="tenant-status-pill" class="status-pill open">
+        <span class="status-dot"></span> <span>🟢 Estamos Abertos Agora!</span>
+      </div>
+
+      <!-- Main WhatsApp Action Button -->
+      <button id="btn-main-whatsapp" class="btn-action btn-primary-action" onclick="handleMainWhatsappClick()">
+        💬 FAZER PEDIDO NO WHATSAPP
+      </button>
+    </div>
+
+    <!-- Active Campaign / Coupon Banner Card -->
+    <div class="glass-card" style="border-color: var(--tenant-primary);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: var(--tenant-primary);">
+          OFERTA ESPECIAL
+        </span>
+        <span style="font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 0.15rem 0.5rem; border-radius: 4px;" id="coupon-code-display">
+          PIZZA10
+        </span>
+      </div>
+      <h3 id="campaign-title" style="font-size: 1.15rem; font-weight: 800; margin-bottom: 0.4rem;">
+        🎁 10% OFF no 1º Pedido
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Cadastre-se com seu endereço para resgatar o desconto e participar do nosso Clube VIP!
+      </p>
+      <button class="btn-action btn-primary-action" onclick="openModal('modal-cadastrar')">
+        🎁 PEGAR MEU DESCONTO AGORA
+      </button>
+    </div>
+
+    <!-- NOVO 1: Destaques Rápidos / Mais Vendidos (Carrossel Fotos) -->
+    <div class="glass-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <h3 style="font-size: 0.95rem; font-weight: 800; color: #fff;">🔥 Mais Vendidos / Destaques</h3>
+        <span style="font-size: 0.75rem; color: var(--tenant-primary);">Clique para pedir no Whats</span>
+      </div>
+      <div id="highlights-container" class="highlights-container">
+        <!-- Dynamically rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Destaque: Localização Completa & Como Chegar -->
+    <div class="glass-card">
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <span style="font-size: 1.4rem;">📍</span>
+        <div>
+          <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff;">Nossa Localização</h3>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Venha nos visitar ou peça entrega na sua região</span>
+        </div>
+      </div>
+
+      <!-- Card do Endereço Detalhado -->
+      <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+        <div style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem;" id="tenant-address">
+          Rua das Flores, 123 - Centro
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted);">
+          📍 Ponto de Referência: Próximo à Praça Central<br>
+          🕒 Horário: <strong style="color: var(--text-main);" id="tenant-hours">18:00 às 23:30</strong>
+        </p>
+      </div>
+
+      <!-- Botões de Ação para Navegação / GPS -->
+      <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+        <button class="btn-action btn-primary-action" onclick="openMapsNavigation('google')">
+          📍 ABRIR NO GOOGLE MAPS
+        </button>
+        <button class="btn-action btn-secondary-action" onclick="openMapsNavigation('waze')">
+          🚗 ABRIR NO WAZE
+        </button>
+      </div>
+    </div>
+
+    <!-- NOVO 2: Prova Social / Avaliações de Clientes -->
+    <div class="glass-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+        <span style="font-size: 0.85rem; font-weight: 700; color: #fff;">⭐ O que dizem os clientes</span>
+        <span class="review-rating-badge" id="tenant-rating">4.9 ★★★★★</span>
+      </div>
+      <blockquote style="font-size: 0.82rem; color: var(--text-muted); font-style: italic; border-left: 2px solid var(--tenant-primary); padding-left: 0.75rem; margin: 0.4rem 0;" id="tenant-testimonial">
+        "A melhor pizza da cidade! Chegou super quente em 25 minutos. ⭐⭐⭐⭐⭐ - Ana S."
+      </blockquote>
+    </div>
+
+    <!-- NOVO 3: Formas de Pagamento Aceitas -->
+    <div class="glass-card" style="padding: 1rem;">
+      <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted);">💳 Formas de Pagamento Aceitas:</span>
+      <div id="payments-container" class="payment-pills-grid">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+      <p style="font-size: 0.75rem; color: var(--text-dim);">
+        Plataforma por <strong style="color: var(--text-muted);">BioFidelidade.com.br</strong><br>
+        Tecnologia para Conversão no Link da Bio
+      </p>
+      <div style="margin-top: 0.5rem;">
+        <a href="admin/empresa.html" style="font-size: 0.75rem; color: var(--tenant-primary);">Painel da Empresa</a> • 
+        <a href="admin/master.html" style="font-size: 0.75rem; color: var(--text-muted);">Painel Master</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal Lead Capture & Auto Registration -->
+  <div class="modal-overlay" id="modal-cadastrar">
+    <div class="modal-box">
+
+      <!-- STEP 1: Full Form -->
+      <div id="modal-lead-form-step">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <h3 style="font-size: 1.15rem;">🎁 Cadastro no Clube & Desconto</h3>
+          <button onclick="closeModal('modal-cadastrar')" style="background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">&times;</button>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Preencha seus dados para receber o cupom e agilizar seus futuros pedidos:
+        </p>
+
+        <form onsubmit="handleLeadSubmit(event)">
+          <div class="form-group">
+            <label class="form-label" for="lead-name">Nome Completo</label>
+            <input type="text" id="lead-name" class="form-control" placeholder="Ex: Maria Aparecida Santos" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="lead-whatsapp">WhatsApp (DDD + Número)</label>
+            <input type="tel" id="lead-whatsapp" class="form-control" placeholder="(11) 99999-9999" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 0.5rem;">
+            <div class="form-group">
+              <label class="form-label" for="lead-endereco">Endereço (Rua e Nº)</label>
+              <input type="text" id="lead-endereco" class="form-control" placeholder="Rua das Palmeiras, 45" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lead-bairro">Bairro</label>
+              <input type="text" id="lead-bairro" class="form-control" placeholder="Centro" required>
+            </div>
+          </div>
+
+          <!-- Option to join VIP WhatsApp Group -->
+          <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid var(--tenant-primary); padding: 0.75rem; border-radius: var(--radius-sm); margin: 0.75rem 0;">
+            <label style="display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.82rem; color: #fff; cursor: pointer;">
+              <input type="checkbox" id="lead-vip-check" checked style="accent-color: var(--tenant-primary); margin-top: 0.15rem; width: 16px; height: 16px;">
+              <span><strong>🟢 Entrar também no Grupo VIP de Ofertas no WhatsApp!</strong><br><span style="font-size: 0.75rem; color: var(--text-muted);">Receba cupons secretos e promoções relâmpago em primeira mão.</span></span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn-action btn-primary-action" style="margin-top: 0.5rem;">
+            🚀 CONCLUIR CADASTRO E GERAR CUPOM
+          </button>
+        </form>
+      </div>
+
+      <!-- STEP 2: Post-Registration Success Screen -->
+      <div id="modal-lead-success-step" style="display: none; text-align: center;">
+        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎉</div>
+        <h3 style="font-size: 1.25rem; color: var(--tenant-primary); margin-bottom: 0.25rem;">Cadastro Realizado!</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Seja bem-vindo(a), <strong id="succ-customer-name" style="color: #fff;">Maria</strong>! Seu cupom <strong id="succ-coupon-code" style="color: var(--tenant-primary);">PIZZA10</strong> foi ativado.
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <button class="btn-action btn-primary-action" onclick="handleSendCouponWhatsapp()">
+            💬 FAZER PEDIDO COM CUPOM NO WHATSAPP
+          </button>
+
+          <button id="btn-action-vip-group" class="btn-action btn-secondary-action" style="border-color: #25d366; color: #25d366;">
+            📢 ENTRAR NO GRUPO VIP DE PROMOÇÕES
+          </button>
+
+          <button class="btn-action btn-secondary-action" style="font-size: 0.8rem; padding: 0.5rem;" onclick="resetLeadModalView()">
+            Fechar
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- App Script -->
+  <script src="js/app.js"></script>
+</body>
+</html>
