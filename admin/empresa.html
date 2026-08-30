@@ -1,0 +1,2482 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel da Empresa | BioFidelidade SaaS</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Cropper.js CDN para Recorte Interativo da Foto de Capa (Zoom, Pan, Centralizar & Bordas) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js" defer></script>
+
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { 
+      background: #090d16 radial-gradient(circle at top right, rgba(16, 185, 129, 0.08), transparent 60%);
+      background-attachment: fixed;
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      color: #f8fafc;
+    }
+    h1, h2, h3, h4, h5, h6, .sidebar-brand, .stat-number { 
+      font-family: 'Outfit', sans-serif; 
+    }
+    .glass-card {
+      background: rgba(25, 25, 25, 0.5);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+      transition: all 0.3s ease;
+    }
+    .nav-bar-admin {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 2rem; background: rgba(11, 15, 23, 0.95); border-bottom: 1px solid var(--border-color);
+      width: 100%;
+    }
+    .grid-dashboard {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;
+    }
+    .stat-number { font-size: 2.2rem; font-weight: 800; color: #fff; margin-top: 0.5rem; }
+    .badge-tenant {
+      background: var(--tenant-glow); color: var(--tenant-primary);
+      border: 1px solid var(--tenant-primary); padding: 0.25rem 0.75rem; border-radius: 99px;
+      font-size: 0.85rem; font-weight: 800; display: inline-flex; align-items: center; gap: 0.4rem;
+    }
+    .badge-niche {
+      background: rgba(255, 255, 255, 0.08); color: var(--text-muted);
+      border: 1px solid var(--border-color); padding: 0.2rem 0.6rem; border-radius: 99px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .tab-btn {
+      padding: 0.65rem 1.1rem; border-radius: var(--radius-sm); border: none;
+      background: rgba(255,255,255,0.04); color: var(--text-muted); font-weight: 600; font-size: 0.88rem;
+      cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 0.4rem;
+    }
+    .tab-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .tab-btn.active { background: var(--tenant-primary); color: #fff; box-shadow: 0 4px 12px var(--tenant-glow); }
+    .tab-content { display: none !important; }
+    .tab-content.active { display: block !important; }
+    .highlight-edit-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .img-upload-box {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 2px dashed var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .img-upload-box:hover {
+      border-color: var(--tenant-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .img-preview-thumb {
+      width: 60px;
+      height: 60px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      border: 1px solid var(--border-color);
+      background: #000;
+    }
+
+    /* PREVIEW EM TEMPO REAL NO CELULAR DO PAINEL */
+    .mobile-header-preview-box {
+      width: 100%;
+      height: 140px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      position: relative;
+      background: #000;
+      margin-top: 0.5rem;
+    }
+    .mobile-header-preview-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+    }
+
+    /* MODAL DE CROPPER INTERATIVO EM TELA CHEIA */
+    .cropper-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(8px);
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .cropper-modal-overlay.active {
+      display: flex;
+    }
+    .cropper-modal-container {
+      background: #0d1322;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 720px;
+      padding: 1.25rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      max-height: 92vh;
+    }
+    .cropper-canvas-box {
+      width: 100%;
+      height: 350px;
+      background: #05080e;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin: 1rem 0;
+      border: 1px solid var(--border-color);
+    }
+    .cropper-canvas-box img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .search-input-crm {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 1rem;
+      color: #fff;
+      font-size: 0.85rem;
+      width: 240px;
+    }
+    .empty-state-card {
+      padding: 3rem; text-align: center; color: var(--text-muted);
+    }
+    .password-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .password-toggle-eye {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .payment-option-checkbox-card {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .payment-option-checkbox-card:hover {
+      border-color: var(--tenant-primary);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    /* Modais do Painel Admin */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      padding: 1rem;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-box {
+      background: #111726;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 440px;
+      max-height: 92vh;
+      overflow-y: auto;
+      padding: 1.25rem;
+      transform: scale(0.95);
+      transition: all 0.25s ease;
+    }
+    .modal-overlay.active .modal-box {
+      transform: scale(1);
+    }
+
+    /* Premium Sidebar Layout from Master */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #090d16; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: rgba(10, 10, 10, 0.4);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-right: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      z-index: 100;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+    }
+    .sidebar-header {
+      padding: 1.75rem 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .sidebar-brand { font-size: 1.5rem; font-weight: 800; color: #fff; letter-spacing: -0.03em; }
+    .nav-menu { padding: 1.5rem 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.85rem 1.1rem; border-radius: var(--radius-sm);
+      color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.95rem;
+      cursor: pointer; transition: var(--transition);
+      border: 1px solid transparent;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.03); color: #fff; border-color: rgba(255,255,255,0.05); }
+    .nav-item.active { 
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%);
+      color: var(--tenant-primary); 
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-left: 3px solid var(--tenant-primary); 
+      box-shadow: inset 2px 0 12px rgba(16, 185, 129, 0.05);
+    }
+    
+    .sidebar-footer { padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); }
+    .btn-logout {
+      width: 100%; display: block; text-align: center; padding: 0.85rem;
+      background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: var(--radius-sm); font-weight: 600; font-size: 0.9rem; cursor: pointer; text-decoration: none;
+      transition: var(--transition);
+    }
+    .btn-logout:hover { background: rgba(239, 68, 68, 0.15); box-shadow: 0 0 16px rgba(239, 68, 68, 0.2); }
+
+    .main-content {
+      flex: 1; padding: 2.5rem 3.5rem; overflow-y: auto; height: 100vh; position: relative;
+    }
+    
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .page-title h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.25rem; letter-spacing: -0.03em; }
+    .page-title p { color: var(--text-muted); font-size: 0.95rem; }
+
+    .btn-outline {
+      background: transparent; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.15); padding: 0.6rem 0.8rem;
+      border-radius: var(--radius-sm); font-weight: 600; font-size: 0.85rem; cursor: pointer; text-decoration: none; transition: var(--transition); display: inline-flex; align-items: center; gap: 0.3rem;
+    }
+    .btn-outline:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3); color: #fff; }
+    
+    /* Hide the old layout elements */
+    /* removed hidden layout */
+
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">BioFidelidade</div>
+      <span class="badge-tenant" id="admin-company-name" style="margin-top: 0.5rem;">Empresa</span>
+      <span class="badge-niche" id="admin-company-niche" style="margin-top: 0.25rem;">Nicho</span>
+      <span id="badge-email-confirm-status" style="padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.7rem; font-weight: 800; display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; margin-top: 0.75rem; background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3);" onclick="checkAndOpenEmailConfirmModal()">
+        ⚠️ E-mail Pendente
+      </span>
+      <button type="button" id="btn-test-email-lock" onclick="toggleEmailConfirmationForTesting()" class="btn-action btn-secondary-action" style="padding: 0.3rem 0.5rem; font-size: 0.7rem; cursor: pointer; border-color: rgba(245,158,11,0.5); color: #f59e0b; display: none; margin-top: 0.5rem;">
+        🔒 Testar Trava
+      </button>
+    </div>
+    
+    <nav class="nav-menu">
+      <div class="nav-item active" onclick="showTab('tab-visao-geral', this)">
+        <span>📊</span> Visão Geral
+      </div>
+      <div class="nav-item" onclick="showTab('tab-clientes', this)">
+        <span>🗂️</span> Clientes & CRM
+      </div>
+      <div class="nav-item" onclick="showTab('tab-destaques', this)">
+        <span>⭐</span> Destaques
+      </div>
+      <div class="nav-item" onclick="showTab('tab-cupons', this)">
+        <span>🎟️</span> Cupons VIP
+      </div>
+      <div class="nav-item" onclick="showTab('tab-pagamentos', this)">
+        <span>💳</span> Pagamentos
+      </div>
+      <div class="nav-item" onclick="showTab('tab-localizacao', this)">
+        <span>📍</span> Localização
+      </div>
+      <div class="nav-item" onclick="showTab('tab-conta-seguranca', this)">
+        <span>⚙️</span> Perfil Visual
+      </div>
+      <div class="nav-item" onclick="showTab('tab-qrcode', this)">
+        <span>📱</span> Gerador QR
+      </div>
+    </nav>
+    
+    <div class="sidebar-footer" style="display:flex; flex-direction:column; gap:0.5rem;">
+      <select id="company-selector-admin" onchange="switchAdminCompany(this.value)" class="tenant-switcher-select" style="display: none; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.5rem; border-radius: 8px; font-size: 0.8rem;"></select>
+      <button class="btn-outline" onclick="copyBioLink()" style="width:100%; justify-content:center;">Copiar Link da Bio</button>
+      <a href="../index.html" id="link-public-page" target="_blank" class="btn-outline" style="width:100%; justify-content:center;">Ver Página Pública ↗</a>
+      <a href="login.html" class="btn-logout">Sair do Painel</a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <div id="tab-visao-geral" class="tab-content">
+      <div class="grid-dashboard" style="margin-bottom: 1.5rem;">
+        <div class="glass-card">
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Visualizações no Link da Bio</span>
+          <div class="stat-number" id="m-views">0</div>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Acessos em tempo real</span>
+        </div>
+
+        <div class="glass-card">
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Leads Cadastrados (Com Endereço)</span>
+          <div class="stat-number" id="m-leads">0</div>
+          <span style="font-size: 0.78rem; color: var(--open-green);" id="m-conversion-rate">Taxa de conversão: 0%</span>
+        </div>
+
+        <div class="glass-card">
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Membros no Grupo VIP</span>
+          <div class="stat-number" id="m-vip">0</div>
+          <span style="font-size: 0.78rem; color: var(--tenant-primary);">Engajamento em ofertas</span>
+        </div>
+
+        <div class="glass-card">
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Cupons Resgatados</span>
+          <div class="stat-number" id="m-coupons">0</div>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Campanha ativa</span>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 1: PAINEL DE ORIGEM DO TRÁFEGO (ANALYTICS) -->
+      <div class="glass-card" style="margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3 style="margin-bottom: 0.25rem;">📊 Analytics de Origem do Tráfego</h3>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Descubra de onde estão vindo os acessos e cadastros da sua bio</span>
+          </div>
+          <span class="badge-niche" style="color: var(--tenant-primary); border-color: var(--tenant-primary);">🎯 Inteligência de Vendas</span>
+        </div>
+
+        <div id="traffic-origin-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <!-- Preenchido via JS: Instagram, QR Code Balcão, Facebook, WhatsApp, Direto -->
+        </div>
+
+        <!-- GERADOR DE LINKS COM TAG DE ORIGEM -->
+        <div style="background: rgba(255,255,255,0.03); border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 1.25rem;">
+          <h4 style="color: #fff; font-size: 0.95rem; margin-bottom: 0.5rem;">🔗 Gerador de Link Rápido para Divulgação</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Gere links rastreados para postar no Instagram, colocar no QR Code do balcão ou enviar no WhatsApp.
+          </p>
+
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+            <select id="link-tag-channel" class="form-control" style="width: auto; min-width: 220px;" onchange="updateGeneratedLinkPreview()">
+              <option value="instagram">📸 Instagram Bio / Stories (?src=instagram)</option>
+              <option value="qrcode_balcao">📲 QR Code Balcão / Panfleto (?src=qrcode_balcao)</option>
+              <option value="facebook">📘 Facebook Post / Ads (?src=facebook)</option>
+              <option value="whatsapp">💬 WhatsApp / Grupos (?src=whatsapp)</option>
+              <option value="anuncio_pago">🚀 Anúncio Pago Meta/Google (?src=anuncio_pago)</option>
+            </select>
+
+            <input type="text" id="generated-tagged-url" class="form-contrreadonly style="flex: 1; min-width: 260px; font-family: monospace; background: rgba(0,0,0,0.5); color: var(--tenant-primary); font-weight: 700;">
+
+            <button type="button" class="btn-action btn-primary-action" style="width: auto; padding: 0.6rem 1.1rem; cursor: pointer;" onclick="copyTaggedLink()">
+              📋 Copiar Link Rastáreado
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Clientes & Leads CRM -->
+    <div id="tab-clientes" class="tab-content" style="display: none;">
+      <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3 style="margin-bottom: 0.25rem;">Base de Clientes & CRM</h3>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Visualize os dados, contate clientes ou gerencie registros</span>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <input type="text" id="search-crm" class="search-input-crm" placeholder="Buscar por Nome, Whats ou Bairro..." oninput="filterCRMTable()">
+            <button type="button" class="btn-action btn-secondary-action" style="width: auto; padding: 0.4rem 0.75rem; font-size: 0.8rem; cursor: pointer;" onclick="exportCRMList()">
+              Exportar CSV
+            </button>
+            <button type="button" class="btn-action btn-secondary-action" style="width: auto; padding: 0.4rem 0.75rem; font-size: 0.8rem; cursor: pointer; border-color: rgba(239,68,68,0.4); color: #ef4444;" onclick="clearAllLeads()">
+              🗑️ Limpar Todos
+            </button>
+          </div>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
+              <th style="padding: 0.75rem;">Nome Completo</th>
+              <th style="padding: 0.75rem;">WhatsApp</th>
+              <th style="padding: 0.75rem;">Endereço & Bairro</th>
+              <th style="padding: 0.75rem;">Origem</th>
+              <th style="padding: 0.75rem;">Cupom Gerado</th>
+              <th style="padding: 0.75rem;">Data / Hora</th>
+              <th style="padding: 0.75rem; text-align: right;">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="company-customers-tbody">
+            <!-- Preenchido via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: Fotos & Destaques / Mais Vendidos -->
+    <div id="tab-destaques" class="tab-content" style="display: none;">
+      <div class="glass-card" style="max-width: 760px; margin: 0 auto;">
+        <h3>Produtos & Serviços em Destaque</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+          Anexe as fotos e valores dos 3 principais produtos ou serviços em destaque na sua bio.
+        </p>
+
+        <!-- Destaque 1 -->
+        <div class="highlight-edit-card">
+          <h4 style="color: var(--tenant-primary); margin-bottom: 0.75rem;">Item 1 em Destaque</h4>
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Nome do Produto / Serviço</label>
+              <input type="text" id="h1-name" class="form-control" value="Vitamina C Zinco Premium">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Preço (R$)</label>
+              <input type="text" id="h1-price" class="form-control" value="R$ 29,90">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Anexar Foto do Produto</label>
+            <div class="img-upload-box" onclick="document.getElementById('h1-file-input').click()">
+              <img id="h1-preview" src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400" class="img-preview-thumb" alt="Preview 1">
+              <div>
+                <span style="font-size: 0.88rem; font-weight: 700; color: #fff;">Clique aqui para selecionar uma foto</span><br>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Suporta JPG, PNG ou WEBP (Galeria / Câmera)</span>
+              </div>
+              <input type="file" id="h1-file-input" accept="image/*" style="display: none;" onchange="handleImageUpload(event, 'h1')">
+            </div>
+          </div>
+        </div>
+
+        <!-- Destaque 2 -->
+        <div class="highlight-edit-card">
+          <h4 style="color: var(--tenant-primary); margin-bottom: 0.75rem;">Item 2 em Destaque</h4>
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Nome do Produto / Serviço</label>
+              <input type="text" id="h2-name" class="form-control" value="Kit Dermocosmético Hidratante">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Preço (R$)</label>
+              <input type="text" id="h2-price" class="form-control" value="R$ 69,90">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Anexar Foto do Produto</label>
+            <div class="img-upload-box" onclick="document.getElementById('h2-file-input').click()">
+              <img id="h2-preview" src="https://images.unsplash.com/photo-1576602976047-174e57a47881?w=400" class="img-preview-thumb" alt="Preview 2">
+              <div>
+                <span style="font-size: 0.88rem; font-weight: 700; color: #fff;">Clique aqui para selecionar uma foto</span><br>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Suporta JPG, PNG ou WEBP (Galeria / Câmera)</span>
+              </div>
+              <input type="file" id="h2-file-input" accept="image/*" style="display: none;" onchange="handleImageUpload(event, 'h2')">
+            </div>
+          </div>
+        </div>
+
+        <!-- Destaque 3 -->
+        <div class="highlight-edit-card">
+          <h4 style="color: var(--tenant-primary); margin-bottom: 0.75rem;">Item 3 em Destaque</h4>
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Nome do Produto / Serviço</label>
+              <input type="text" id="h3-name" class="form-control" value="Protetor Solar FPS 60">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Preço (R$)</label>
+              <input type="text" id="h3-price" class="form-control" value="R$ 49,90">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Anexar Foto do Produto</label>
+            <div class="img-upload-box" onclick="document.getElementById('h3-file-input').click()">
+              <img id="h3-preview" src="https://images.unsplash.com/photo-1585435557343-3b092031a831?w=400" class="img-preview-thumb" alt="Preview 3">
+              <div>
+                <span style="font-size: 0.88rem; font-weight: 700; color: #fff;">Clique aqui para selecionar uma foto</span><br>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Suporta JPG, PNG ou WEBP (Galeria / Câmera)</span>
+              </div>
+              <input type="file" id="h3-file-input" accept="image/*" style="display: none;" onchange="handleImageUpload(event, 'h3')">
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn-action btn-primary-action" style="cursor: pointer;" onclick="saveHighlights()">
+          Salvar Produtos em Destaque
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB: OFERTAS, CUPONS & GRUPO VIP -->
+    <div id="tab-cupons" class="tab-content" style="display: none;">
+      <div class="glass-card" style="max-width: 650px; margin: 0 auto;">
+        <h3>Ofertas, Cupons & Link do Grupo VIP</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+          Personalize a porcentagem do desconto (ex: 5% OFF, 10% OFF, R$ 15 OFF), a oferta de boas-vindas e o código do cupom.
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 1rem;">
+          <div class="form-group" style="margin: 0;">
+            <label class="form-label">Porcentagem / Valor do Desconto *</label>
+            <input type="text" id="config-discount-badge" class="form-control" value="10% OFF" placeholder="ex: 5% OFF, 10% OFF, R$ 10 OFF" oninput="updateCampaignTitlePreview(this.value)">
+          </div>
+
+          <div class="form-group" style="margin: 0;">
+            <label class="form-label">Código Base do Cupom *</label>
+            <input type="text" id="config-coupon-code" class="form-control" value="MED10" placeholder="ex: MED10, PROMO5">
+          </div>
+        </div>
+
+        <!-- ATALHOS RÁPIDOS PRESET DE DESCONTO -->
+        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+          <button type="button" class="btn-action btn-secondary-action" style="padding: 0.3rem 0.65rem; font-size: 0.73rem; cursor: pointer; width: auto;" onclick="applyDiscountPreset('5%')">⚡ 5% OFF (Cupom MED10)</button>
+          <button type="button" class="btn-action btn-secondary-action" style="padding: 0.3rem 0.65rem; font-size: 0.73rem; cursor: pointer; width: auto;" onclick="applyDiscountPreset('10%')">⚡ 10% OFF (Cupom MED10)</button>
+          <button type="button" class="btn-action btn-secondary-action" style="padding: 0.3rem 0.65rem; font-size: 0.73rem; cursor: pointer; width: auto;" onclick="applyDiscountPreset('especial')">⚡ Desconto Especial VIP</button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Título da Oferta de Boas-Vindas na Bio</label>
+          <input type="text" id="config-campaign-title" class="form-control" value="Ganhe 10% OFF na 1ª compra + Acesso ao Grupo VIP">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Link de Convite do Grupo VIP do WhatsApp</label>
+          <input type="url" id="config-vip-group-cupons" class="form-control" value="https://chat.whatsapp.com/demoMedFarmaVIP" placeholder="https://chat.whatsapp.com/xyz">
+          <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; display: block;">
+            💡 Cole aqui o link de convite do seu grupo no WhatsApp (Dados do Grupo -> Convidar via Link).
+          </span>
+        </div>
+
+        <button type="button" class="btn-action btn-primary-action" style="cursor: pointer;" onclick="saveCampaignConfig()">
+          Salvar Alterações da Campanha & Grupo VIP
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB: FORMAS DE PAGAMENTO ACEITAS -->
+    <div id="tab-pagamentos" class="tab-content" style="display: none;">
+      <div class="glass-card" style="max-width: 650px; margin: 0 auto;">
+        <h3>Formas de Pagamento Aceitas</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+          Selecione os métodos de pagamento exibidos no perfil da sua bio para passar confiança aos seus clientes.
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+          
+          <label class="payment-option-checkbox-card">
+            <input type="checkbox" id="pay-pix" checked style="width: 18px; height: 18px; cursor: pointer;">
+            <div>
+              <strong style="color: #fff; font-size: 0.9rem;">⚡ Pix Instantâneo</strong><br>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">Aprova na hora com Chave Pix ou QR Code</span>
+            </div>
+          </label>
+
+          <label class="payment-option-checkbox-card">
+            <input type="checkbox" id="pay-card" checked style="width: 18px; height: 18px; cursor: pointer;">
+            <div>
+              <strong style="color: #fff; font-size: 0.9rem;">💳 Cartão de Crédito / Débito</strong><br>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">Maquininha na entrega ou link de pagamento online</span>
+            </div>
+          </label>
+
+          <label class="payment-option-checkbox-card">
+            <input type="checkbox" id="pay-cash" checked style="width: 18px; height: 18px; cursor: pointer;">
+            <div>
+              <strong style="color: #fff; font-size: 0.9rem;">💵 Dinheiro em Espécie (Com Troco)</strong><br>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">Pagamento físico no ato da entrega/atendimento</span>
+            </div>
+          </label>
+
+          <label class="payment-option-checkbox-card">
+            <input type="checkbox" id="pay-meal" style="width: 18px; height: 18px; cursor: pointer;">
+            <div>
+              <strong style="color: #fff; font-size: 0.9rem;">🍔 Vale Refeição / Alimentação (VR / VA / Ticket)</strong><br>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">Ideal para alimentação, drogarias e supermercados</span>
+            </div>
+          </label>
+
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Outras Formas de Pagamento Personalizadas (Opcional)</label>
+          <input type="text" id="pay-custom" class="form-control" placeholder="Ex: PicPay, Boleto Faturado, Transferência Itaú" value="">
+          <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; display: block;">
+            Caso queira adicionar outra opção personalizada, separe por vírgulas.
+          </span>
+        </div>
+
+        <button type="button" class="btn-action btn-primary-action" style="cursor: pointer;" onclick="savePaymentConfig()">
+          Salvar Formas de Pagamento
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 5: Localização & GPS -->
+    <div id="tab-localizacao" class="tab-content" style="display: none;">
+      <div class="glass-card" style="max-width: 650px; margin: 0 auto;">
+        <h3>Configuração de Localização & GPS</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          Altere o endereço e os horários de atendimento da empresa. O mapa e o indicador de atendimento em tempo áreal atualizarão automaticamente!
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">Endereço Completo Comercial</label>
+          <input type="text" id="config-address" class="form-control" value="Av. Brasil, 450 - Centro" oninput="updateAdminMapPreview(this.value)">
+          <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; display: block;">
+            💡 Digite a Rua, Número, Bairro e Cidade (ex: Av. Brasil, 450 - Centro).
+          </span>
+        </div>
+
+        <!-- HOÁRIOS DETALHADOS POR DIA DA SEMANA / FINAL DE SEMANA -->
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label class="form-label" style="font-weight: 800; color: #fff;">⏰ Horários de Funcionamento por Dia / Final de Semana</label>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-top: 0.4rem;">
+            <!-- 1. Seg a Sex -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.85rem;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: #fff; display: block; margin-bottom: 0.35rem;">
+                📅 Segunda a Sexta
+              </label>
+              <input type="text" id="config-hours-weekday" class="form-control" value="08:00 às 22:00" placeholder="08:00 às 22:00" oninput="updateAdminHoursPreviewAll()">
+            </div>
+
+            <!-- 2. Sábado -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.85rem;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: #fff; display: block; margin-bottom: 0.35rem;">
+                📅 Sábado
+              </label>
+              <input type="text" id="config-hours-saturday" class="form-control" value="08:00 às 18:00" placeholder="08:00 às 18:00 ou Fechado" oninput="updateAdminHoursPreviewAll()">
+            </div>
+
+            <!-- 3. Domingo -->
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.85rem;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: #fff; display: block; margin-bottom: 0.35rem;">
+                📅 Domingo & Feriados
+              </label>
+              <input type="text" id="config-hours-sunday" class="form-control" value="Fechado" placeholder="Fechado ou 09:00 às 14:00" oninput="updateAdminHoursPreviewAll()">
+            </div>
+          </div>
+
+          <!-- ATALHOS RÁPIDOS PRESET -->
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.65rem;">
+            <button type="button" class="btn-action btn-secondary-action" style="padding: 0.3rem 0.65rem; font-size: 0.73rem; cursor: pointer; width: auto;" onclick="applyHoursPreset('standard')">⚡ Padrao: Seg-Sex 08-22h | Sáb 08-18h | Dom Fechado</button>
+            <button type="button" class="btn-action btn-secondary-action" style="padding: 0.3rem 0.65rem; font-size: 0.73rem; cursor: pointer; width: auto;" onclick="applyHoursPreset('commercial')">⚡ Comercial: Seg-Sex 08-18h | Sáb 08-12h | Dom Fechado</button>
+            <button type="button" class="btn-action btn-secondary-action" style="padding: 0.3rem 0.65rem; font-size: 0.73rem; cursor: pointer; width: auto;" onclick="applyHoursPreset('24h')">⚡ 24h Todos os Dias</button>
+          </div>
+        </div>
+
+        <!-- PRÉ-VISUALIZAÇÃO DO STATUS EM TEMPO REAL E MAPA DO GOOGLE -->
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span style="font-size: 0.82rem; font-weight: 700; color: #fff;">📱 Pré-Visualização na Bio Pública</span>
+            <div id="admin-hours-status-badge" style="font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.6rem; border-radius: 99px; background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid #10b981;">
+              🟢 Aberto Agora
+            </div>
+          </div>
+
+          <div style="width: 100%; height: 160px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-color); position: relative; background: #000;">
+            <iframe id="admin-map-preview-iframe" style="width: 100%; height: 100%; border: none; filter: grayscale(0.8) invert(0.9) contrast(1.2);" src="https://maps.google.com/maps?q=Av.%20Brasil,%20450%20-%20Centro&t=&z=15&ie=UTF8&iwloc=&output=embed"></iframe>
+          </div>
+        </div>
+
+        <button type="button" class="btn-action btn-primary-action" style="cursor: pointer;" onclick="saveLocationConfig()">
+          Salvar Localização & Horários
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 6: PERFIL & IDENTIDADE VISUAL + RECORTE INTERATIVO DE CAPA COM CENTRALIZAÇÃO AUTOMÁTICA -->
+    <div id="tab-conta-seguranca" class="tab-content" style="display: none;">
+      <div class="glass-card" style="max-width: 680px; margin: 0 auto;">
+        <h3 style="margin-bottom: 0.25rem;">Perfil & Identidade Visual da Bio</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+          Personalize as fotos da capa da sua bio com ferramenta de zoom, centralização em 1 clique e bordas livres.
+        </p>
+        
+        <!-- SEÇÃO DE FOTOS DA BIO COM RECORTE E CENTRALIZAÇÃO AUTOMÁTICA -->
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem;">
+          <h4 style="color: var(--tenant-primary); margin-bottom: 1rem;">🖼️ Imagens do Perfil & Capa</h4>
+
+          <!-- 1. Foto de Capa / Banner com Ferramenta de Zoom & Centralização -->
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <label class="form-label" style="margin-bottom: 0;">1. Foto da Capa (Banner)</label>
+              <div style="display: flex; gap: 0.5rem;">
+                <button type="button" onclick="openCropperModal()" class="btn-action btn-primary-action" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; cursor: pointer; width: auto;">
+                  ✂️ Enquadrar & Cortar Capa
+                </button>
+                <button type="button" onclick="document.getElementById('banner-file-input').click()" class="btn-action btn-secondary-action" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; cursor: pointer; width: auto;">
+                  📷 Nova Foto
+                </button>
+              </div>
+            </div>
+            
+            <div class="mobile-header-preview-box">
+              <img id="banner-preview" src="https://images.unsplash.com/photo-1576602976047-174e57a47881?w=800" class="mobile-header-preview-img" alt="Capa Atual">
+            </div>
+            <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; display: block;">
+              💡 Clique no botão <strong>"Enquadrar & Cortar Capa"</strong> para centralizar a imagem em 1 clique e ajustar o zoom perfeito!
+            </span>
+
+            <input type="file" id="banner-file-input" accept="image/*" style="display: none;" onchange="handleBannerUpload(event)">
+          </div>
+
+          <!-- 2. Foto do Perfil / Logotipo -->
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">2. Foto do Perfil (Logotipo Circular)</label>
+            <div class="img-upload-box" onclick="document.getElementById('logo-file-input').click()">
+              <img id="logo-preview" src="https://images.unsplash.com/photo-1576602976047-174e57a47881?w=200" class="img-preview-thumb" style="width: 54px; height: 54px; border-radius: 50%;" alt="Logo Preview">
+              <div>
+                <span style="font-size: 0.88rem; font-weight: 700; color: #fff;">Clique para alterar a Foto do Perfil</span><br>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Avatar circular centralizado da marca</span>
+              </div>
+              <input type="file" id="logo-file-input" accept="image/*" style="display: none;" onchange="handleLogoUpload(event)">
+            </div>
+          </div>
+        </div>
+
+        <!-- DADOS GERAIS DA EMPRESA -->
+        <div class="form-group">
+          <label class="form-label">Nome da Empresa (Exibido no Topo)</label>
+          <input type="text" id="config-name" class="form-control" value="Med Farma">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Bio / Descrição Curta da Marca</label>
+          <input type="text" id="config-bio-desc" class="form-control" value="Med Farma • Saúde, Farmácia & Bem-Estar">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Segmento / Categoria Profissional</label>
+          <select id="config-niche" class="form-control">
+            <option value="Saúde, Farmácia & Bem-Estar">Saúde, Farmácia & Bem-Estar</option>
+            <option value="Alimentação, Gastronomia & Delivery">Alimentação, Gastronomia & Delivery</option>
+            <option value="Moda, Vestuário & Acessórios">Moda, Vestuário & Acessórios</option>
+            <option value="Estética, Beleza & Barbearia">Estética, Beleza & Barbearia</option>
+            <option value="Confeitaria, Doceria & Panificação">Confeitaria, Doceria & Panificação</option>
+            <option value="Supermercados, Hortifruti & Mercearia">Supermercados, Hortifruti & Mercearia</option>
+            <option value="Pet Shop & Serviços Veterinários">Pet Shop & Serviços Veterinários</option>
+            <option value="Automotivo, Oficinas & Lava-Rápido">Automotivo, Oficinas & Lava-Rápido</option>
+            <option value="Construção, Reforma & Arquitetura">Construção, Reforma & Arquitetura</option>
+            <option value="Eletrônicos, Informática & Assistência">Eletrônicos, Informática & Assistência</option>
+            <option value="Serviços Profissionais & Consultoria">Serviços Profissionais & Consultoria</option>
+            <option value="Academia, Esportes & Suplementos">Academia, Esportes & Suplementos</option>
+            <option value="Comércio & Serviços Gerais">Comércio & Serviços Gerais</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">E-mail do Titular da Conta</label>
+          <input type="email" id="config-email" class="form-control" value="admin@medfarma.com">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Número do WhatsApp Comercial (com DDD)</label>
+          <input type="text" id="config-whatsapp" class="form-control" value="5511999990000">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Link do Grupo VIP de Promoções do WhatsApp</label>
+          <input type="url" id="config-vip-group" class="form-control" value="https://chat.whatsapp.com/demoMedFarmaVIP" placeholder="https://chat.whatsapp.com/xyz">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Instagram da Empresa (@usuario)</label>
+          <input type="text" id="config-instagram" class="form-control" value="@medfarma.oficial" placeholder="@suaempresa">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Cor Principal da Marca</label>
+          <input type="color" id="config-color" value="#10b981" style="height: 40px; cursor: pointer; width: 100%;">
+        </div>
+
+        <!-- Seção de Segurança: Alterar Senha com Confirmação e Repetição -->
+        <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 1.75rem;">
+          <h4 style="color: #fff; margin-bottom: 0.35rem; font-size: 1.05rem; display: flex; align-items: center; gap: 0.4rem;">
+            🔐 Segurança & Alteração de Senha
+          </h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+            Atualize a senha de acesso da sua conta com confirmação em duas etapas.
+          </p>
+          
+          <!-- 1. Senha Atual -->
+          <div class="form-group" style="margin-bottom: 1.1rem;">
+            <label class="form-label" for="account-current-password">1. Senha Atual</label>
+            <div class="password-wrapper">
+              <input type="password" id="account-current-password" class="form-control" placeholder="••••••••" style="padding-right: 2.5rem;">
+              <button type="button" class="password-toggle-eye" onclick="togglePasswordVisibility('account-current-password', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Nova Senha -->
+          <div class="form-group" style="margin-bottom: 1.1rem;">
+            <label class="form-label" for="account-new-password">2. Nova Senha de Acesso</label>
+            <div class="password-wrapper">
+              <input type="password" id="account-new-password" class="form-control" placeholder="Digite a nova senha (mínimo 6 caracteres)" style="padding-right: 2.5rem;" oninput="validatePasswordConfirmation()">
+              <button type="button" class="password-toggle-eye" onclick="togglePasswordVisibility('account-new-password', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. Confirmar e Repetir a Nova Senha -->
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label class="form-label" for="account-confirm-password">3. Confirmar e Repetir a Nova Senha</label>
+            <div class="password-wrapper">
+              <input type="password" id="account-confirm-password" class="form-control" placeholder="Repita a nova senha para confirmar" style="padding-right: 2.5rem;" oninput="validatePasswordConfirmation()">
+              <button type="button" class="password-toggle-eye" onclick="togglePasswordVisibility('account-confirm-password', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+            <span id="password-match-indicator" style="font-size: 0.78rem; font-weight: 700; margin-top: 0.4rem; display: block;"></span>
+          </div>
+
+          <button type="button" onclick="savePasswordChangeOnly()" class="btn-action btn-secondary-action" style="cursor: pointer; width: auto; padding: 0.55rem 1.1rem; font-size: 0.85rem; border-color: var(--tenant-primary); color: #fff; margin-bottom: 1.5rem;">
+            🔑 Alterar Apenas a Senha
+          </button>
+        </div>
+
+        <button type="button" class="btn-action btn-primary-action" style="cursor: pointer;" onclick="saveProfileConfig()">
+          Salvar Imagens & Dados do Perfil
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 8: Gerador de QR Code & Sorteios -->
+    <div id="tab-qrcode" class="tab-content" style="display: none;">
+      <div class="glass-card">
+        <h3 style="color: #fff; margin-bottom: 0.35rem; font-weight: 800; font-size: 1.2rem;">
+          📱 Gerador de QR Code & Cartaz de Balcão para Sorteios
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+          Imprima este QR Code e coloque no balcão da sua loja, em folhetos ou nas redes sociais. O cliente escaneia com a câmera do celular, se cadastra para participar do sorteio e fica validado no seu CRM!
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
+          <div>
+            <div class="form-group" style="margin-bottom: 1.1rem;">
+              <label class="form-label">Título Personalizado do Cartaz</label>
+              <input type="text" id="qr-poster-title" class="form-control" value="Escaneie para Ganhar Desconto & Participar do Sorteio!" oninput="updateQrCodePreview()">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.1rem;">
+              <label class="form-label">Link de Destino Incorporado no QR Code</label>
+              <input type="text" id="qr-encoded-url" class="form-controreadonly style="background: rgba(0,0,0,0.4); color: var(--tenant-primary); font-family: monospace; font-size: 0.82rem;">
+            </div>
+
+            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;">
+              <div style="font-size: 0.82rem; font-weight: 800; color: #10b981; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+                ⚡ Como Funciona a Validação do Sorteio:
+              </div>
+              <ul style="font-size: 0.78rem; color: var(--text-muted); padding-left: 1.1rem; line-height: 1.5;">
+                <li><strong>1º Escaneamento:</strong> Cliente preenche nome, WhatsApp e CEP (com validação anti-fraude). Ganha o cupom e segue o Instagram da empresa.</li>
+                <li><strong>Re-escaneamento:</strong> Se escanear de novo no balcão, o sistema exibe <em>"Cliente Já Validado! ✅"</em> com horário e número de check-ins.</li>
+                <li><strong>No seu CRM:</strong> Vocêvisualiza a data, hora exata, IP e cidade de cada validação!</li>
+              </ul>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+              <button type="button" class="btn-action btn-primary-action" onclick="printQrPoster()" style="width: auto; padding: 0.75rem 1.25rem;">
+                🖨️ Imprimir Cartaz Oficial A4
+              </button>
+              <button type="button" class="btn-action btn-secondary-action" onclick="downloadQrCodeImage()" style="width: auto; padding: 0.75rem 1.25rem;">
+                📥 Baixar Imagem QR (PNG)
+              </button>
+            </div>
+          </div>
+
+          <!-- Preview do Cartaz de Balcão -->
+          <div id="qr-poster-preview-card" style="background: #ffffff; color: #111827; border-radius: 16px; padding: 1.5rem; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.5); border: 4px solid var(--tenant-primary); position: relative;">
+            <div style="font-size: 0.75rem; font-weight: 800; color: var(--tenant-primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.4rem;" id="qr-company-badge">
+              MED FARMA
+            </div>
+            <h2 id="qr-poster-title-display" style="font-size: 1.15rem; font-weight: 800; color: #111827; margin-bottom: 1rem; line-height: 1.3;">
+              Escaneie para Ganhar Desconto & Participar do Sorteio!
+            </h2>
+
+            <div style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 1rem; display: inline-block; margin-bottom: 1rem;">
+              <img id="qr-code-img-preview" src="" alt="QR Code da Empresa" style="width: 200px; height: 200px; display: block; margin: 0 auto;">
+            </div>
+
+            <div style="font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 0.2rem;">
+              📱 Aponte a câmera do seu celular
+            </div>
+            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">
+              Validação Rápida & Cupons Exclusivos
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL DE RECORTE INTERATIVO DE CAPA COM CENTRALIZAÇÃO AUTOMÁTICA -->
+  <div class="cropper-modal-overlay" id="cropper-modal">
+    <div class="cropper-modal-container">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 1.1rem; color: #fff; margin: 0; font-weight: 800;">Enquadrar Foto de Capa (Centralizar & Zoom)</h3>
+        <button onclick="closeCropperModal()" style="background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem;">
+        Arraste a foto livremente e use o botão <strong>"🎯 Centralizar Imagem"</strong> para alinhar perfeitamente no meio!
+      </p>
+
+      <div class="cropper-canvas-box">
+        <img id="cropper-target-img" src="" alt="Cortar Capa">
+      </div>
+
+      <!-- BARRA DE FERRAMENTAS DO CROPPER COM BOTÃO CENTRALIZAR -->
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+          <button type="button" class="btn-action btn-primary-action" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.82rem; cursor: pointer; background: var(--tenant-primary);" onclick="centerImageInCropper()">🎯 Centralizar Imagem</button>
+          <button type="button" class="btn-action btn-secondary-action" style="width: auto; padding: 0.4rem 0.75rem; font-size: 0.8rem; cursor: pointer;" onclick="fitEntireImageWithBorders()">🖼️ Ajustar Inteira (Com Bordas)</button>
+          <button type="button" class="btn-action btn-secondary-action" style="width: auto; padding: 0.4rem 0.75rem; font-size: 0.8rem; cursor: pointer;" onclick="cropperInstance && cropperInstance.zoom(0.1)">🔍 Zoom +</button>
+          <button type="button" class="btn-action btn-secondary-action" style="width: auto; padding: 0.4rem 0.75rem; font-size: 0.8rem; cursor: pointer;" onclick="cropperInstance && cropperInstance.zoom(-0.1)">🔍 Zoom -</button>
+          <button type="button" class="btn-action btn-secondary-action" style="width: auto; padding: 0.4rem 0.75rem; font-size: 0.8rem; cursor: pointer;" onclick="cropperInstance && cropperInstance.reset()">🔄 Resetar</button>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn-action btn-secondary-action" style="width: auto; padding: 0.45rem 0.9rem; font-size: 0.85rem; cursor: pointer;" onclick="closeCropperModal()">Cancelar</button>
+          <button type="button" class="btn-action btn-primary-action" style="width: auto; padding: 0.45rem 1.1rem; font-size: 0.85rem; cursor: pointer;" onclick="applyCroppedBanner()">✓ Salvar Corte Perfeito</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE BLOQUEIO POR E-MAIL NÃO CONFIRMADO (OBRIGATÓRIO PARA ACESSO) -->
+  <div id="modal-email-confirm-lock" class="cropper-modal-overlay" style="z-index: 999999; backdrop-filter: blur(14px); background: rgba(7,10,18,0.94); display: none;">
+    <div class="cropper-modal-container" style="max-width: 500px; text-align: center; border: 1px solid rgba(245, 158, 11, 0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.8); padding: 2.2rem 1.8rem; background: #0c1019;">
+      <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-size: 2rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem auto; border: 1px solid #f59e0b;">
+        ✉️
+      </div>
+      <h3 style="font-size: 1.35rem; color: #fff; font-weight: 800; margin-bottom: 0.4rem;">Confirmação de E-mail Obrigatória</h3>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5;">
+        Para acessar o painel da sua empresa (<strong id="lock-company-name" style="color: #fff;">Med Farma</strong>), confirme o e-mail cadastrado:<br>
+        <strong id="lock-user-email" style="color: var(--tenant-primary); font-family: monospace; font-size: 0.95rem;">contato@medfarma.com.br</strong>
+      </p>
+
+      <div style="background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.1rem; margin-bottom: 1.5rem; text-align: left;">
+        <label style="font-size: 0.8rem; font-weight: 700; color: #fff; display: block; margin-bottom: 0.4rem;">
+          🔑 Digite o Código de 6 Dígitos recebido por e-mail:
+        </label>
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.4rem;">
+          <input type="text" id="input-confirm-code" maxlength="6" placeholder="123456" style="text-align: center; letter-spacing: 0.4em; font-family: monospace; font-size: 1.2rem; font-weight: 800; text-transform: uppercase;" class="form-control">
+          <button type="button" onclick="verifyConfirmationCode()" class="btn-action btn-primary-action" style="width: auto; padding: 0 1.2rem; white-space: nowrap; cursor: pointer;">
+            Confirmar
+          </button>
+        </div>
+        <span style="font-size: 0.73rem; color: var(--text-muted); display: block;">
+          💡 Digite o código de teste <strong>123456</strong> ou use o botão de confirmação em 1 clique abaixo.
+        </span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+        <button type="button" onclick="quickConfirmEmailSimulated()" class="btn-action btn-primary-action" style="background: #10b981; border-color: #10b981; justify-content: center; cursor: pointer; padding: 0.7rem; font-weight: 800;">
+          ✅ Confirmar E-mail Agora (Simulação 1-Clique)
+        </button>
+        <button type="button" onclick="resendConfirmationEmail()" id="btn-resend-email" class="btn-action btn-secondary-action" style="cursor: pointer; justify-content: center; padding: 0.65rem;">
+          📩 Reenviar E-mail de Confirmação
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let activeSlug = 'medfarma';
+    const defaultTenants = {
+      medfarma: {
+        id: 'comp-4',
+        name: 'Med Farma',
+        slug: 'medfarma',
+        niche: 'Saúde, Farmácia & Bem-Estar',
+        logo: 'https://images.unsplash.com/photo-1576602976047-174e57a47881?w=200',
+        banner: 'https://images.unsplash.com/photo-1576602976047-174e57a47881?w=800',
+        bannerPosition: '50%',
+        primaryColor: '#10b981',
+        whatsapp: '5511999990000',
+        vipGroupUrl: 'https://chat.whatsapp.com/demoMedFarmaVIP',
+        instagram: '@medfarma',
+        bio: 'Med Farma • Saúde, Farmácia & Bem-Estar',
+        address: 'Av. Brasil, 450 - Centro',
+        hours: '08:00 às 22:00',
+        isOpen: true,
+        campaignTitle: 'Ganhe 10% OFF na 1ª compra + Acesso ao Grupo VIP',
+        couponCode: 'MED10',
+        rating: '5.0 ★★★★★ • Avaliações Verificadas (186 avaliações)',
+        payments: ['Pix Instantâneo', 'Cartão de Crédito/Débito', 'Dinheiro em Espécie'],
+        highlights: [
+          { name: 'Vitamina C Zinco Premium', price: 'R$ 29,90', img: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400' },
+          { name: 'Kit Dermocosmético Hidratante', price: 'R$ 69,90', img: 'https://images.unsplash.com/photo-1576602976047-174e57a47881?w=400' },
+          { name: 'Protetor Solar FPS 60', price: 'R$ 49,90', img: 'https://images.unsplash.com/photo-1585435557343-3b092031a831?w=400' }
+        ]
+      },
+      pizzariacentral: {
+        id: 'comp-1',
+        name: 'Pizzaria Central',
+        slug: 'pizzariacentral',
+        niche: 'Alimentação, Gastronomia & Delivery',
+        logo: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200',
+        banner: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800',
+        bannerPosition: '50%',
+        primaryColor: '#ef4444',
+        whatsapp: '5511999991111',
+        vipGroupUrl: 'https://chat.whatsapp.com/demoPizzariaCentralVIP',
+        instagram: '@pizzariacentral',
+        bio: 'Pizza artesanal feita com massa de fermentação natural',
+        address: 'Rua das Flores, 123 - Centro',
+        hours: '18:00 às 23:30',
+        isOpen: true,
+        campaignTitle: 'Ganhe 10% OFF na 1ª compra + Acesso ao Grupo VIP',
+        couponCode: 'PIZZA10',
+        rating: '5.0 ★★★★★ • Avaliações Verificadas (148 avaliações)',
+        payments: ['Pix Instantâneo', 'Cartão de Crédito/Débito', 'Vale Refeição (VR)', 'Dinheiro em Espécie'],
+        highlights: [
+          { name: 'Pizza Suprema Especial', price: 'R$ 54,90', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400' },
+          { name: 'Quatro Queijos Cremosa', price: 'R$ 49,90', img: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400' },
+          { name: 'Combo Família + Guaraná', price: 'R$ 79,90', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400' }
+        ]
+      },
+      lojamarina: {
+        id: 'comp-2',
+        name: 'Loja Marina Moda',
+        slug: 'lojamarina',
+        niche: 'Moda, Vestuário & Acessórios',
+        logo: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200',
+        banner: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800',
+        bannerPosition: '50%',
+        primaryColor: '#ec4899',
+        whatsapp: '5511999992222',
+        vipGroupUrl: 'https://chat.whatsapp.com/demoLojaMarinaVIP',
+        instagram: '@lojamarinamoda',
+        bio: 'Moda feminina contemporânea • Entrega para todo o Brasil',
+        address: 'Av. Paulista, 1500 - Bela Vista',
+        hours: '09:00 às 19:00',
+        isOpen: true,
+        campaignTitle: 'Ganhe 15% OFF na 1ª compra + Acesso ao Grupo VIP',
+        couponCode: 'MARINA15',
+        rating: '4.9 ★★★★★ • Avaliações Verificadas (210 avaliações)',
+        payments: ['Pix com 5% OFF', 'Cartão de Crédito/Débito até 6x', 'Dinheiro em Espécie'],
+        highlights: [
+          { name: 'Vestido Linho Floral', price: 'R$ 189,90', img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400' },
+          { name: 'Blusa Seda Elegance', price: 'R$ 119,90', img: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400' },
+          { name: 'Bolsa Couro Eco VIP', price: 'R$ 149,90', img: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400' }
+        ]
+      },
+      barbeariax: {
+        id: 'comp-3',
+        name: 'Barbearia Alfa',
+        slug: 'barbeariax',
+        niche: 'Estética, Beleza & Barbearia',
+        logo: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=200',
+        banner: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=800',
+        bannerPosition: '50%',
+        primaryColor: '#3b82f6',
+        whatsapp: '5511999993333',
+        vipGroupUrl: 'https://chat.whatsapp.com/demoBarbeariaAlfaVIP',
+        instagram: '@barbeariaalfa',
+        bio: 'Corte masculino premium e barba alinhada',
+        address: 'Rua Augusta, 500 - Consolação',
+        hours: '09:00 às 20:00',
+        isOpen: true,
+        campaignTitle: 'Ganhe 10% OFF no 1º Corte + Acesso ao Grupo VIP',
+        couponCode: 'ALFA10',
+        rating: '5.0 ★★★★★ • Avaliações Verificadas (172 avaliações)',
+        payments: ['Pix Instantâneo', 'Cartão de Crédito/Débito', 'Dinheiro em Espécie'],
+        highlights: [
+          { name: 'Corte de Cabelo Premium', price: 'R$ 45,00', img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400' },
+          { name: 'Barba Alinhada + Toalha Quente', price: 'R$ 35,00', img: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400' },
+          { name: 'Combo Completo (Cabelo + Barba)', price: 'R$ 70,00', img: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400' }
+        ]
+      }
+    };
+
+    let sampleCustomers = [];
+    const imageStore = { h1: '', h2: '', h3: '', logo: '', banner: '' };
+    let cropperInstance = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadDynamicTenant();
+      loadCompanyLeads();
+      renderTrafficOriginAnalytics();
+      updateGeneratedLinkPreview();
+    });
+
+    function showTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      // Remove old tab buttons (if they still exist)
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      // Remove sidebar nav items
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+      document.getElementById(tabId).classList.add('active');
+      if (btn) btn.classList.add('active');
+    }
+
+    function openModal(modalId) {
+      const el = document.getElementById(modalId);
+      if (el) el.classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      const el = document.getElementById(modalId);
+      if (el) el.classList.remove('active');
+    }
+
+    function openCropperModal() {
+      const bannerSrc = imageStore.banner || (document.getElementById('banner-preview') ? document.getElementById('banner-preview').src : '');
+      if (!bannerSrc) {
+        alert('Selecione uma foto primeiro!');
+        return;
+      }
+
+      const modal = document.getElementById('cropper-modal');
+      const targetImg = document.getElementById('cropper-target-img');
+      targetImg.src = bannerSrc;
+
+      modal.classList.add('active');
+
+      if (cropperInstance) cropperInstance.destroy();
+
+      setTimeout(() => {
+        cropperInstance = new Cropper(targetImg, {
+          aspectRatio: 800 / 280, // Proporção da Capa Retangular da Bio
+          viewMode: 0, // PERMITE BORDAS E DIMINUIR A FOTO ALÉM DO RETÂNGULO
+          autoCropAáárea: 0.9,
+          responsive: true,
+          background: false,
+          ready() {
+            centerImageInCropper();
+          }
+        });
+      }, 200);
+    }
+
+    function centerImageInCropper() {
+      if (!cropperInstance) return;
+      // Calcula o centro exato da ááárea de visão e ajusta o canvas da foto
+      const containerData = cropperInstance.getContainerData();
+      const canvasData = cropperInstance.getCanvasData();
+
+      const centerX = (containerData.width - canvasData.width) / 2;
+      const centerY = (containerData.height - canvasData.height) / 2;
+
+      cropperInstance.setCanvasData({
+        left: centerX,
+        top: centerY
+      });
+    }
+
+    function fitEntireImageWithBorders() {
+      if (!cropperInstance) return;
+      const cropBoxData = cropperInstance.getCropBoxData();
+      const imageData = cropperInstance.getImageData();
+
+      // Calcula a proporção exata para caber a foto 100% inteira sem nenhum corte
+      const widthRatio = cropBoxData.width / imageData.naturalWidth;
+      const heightRatio = cropBoxData.height / imageData.naturalHeight;
+      const fitRatio = Math.min(widthRatio, heightRatio);
+
+      const newWidth = imageData.naturalWidth * fitRatio;
+      const newHeight = imageData.naturalHeight * fitRatio;
+
+      const left = cropBoxData.left + (cropBoxData.width - newWidth) / 2;
+      const top = cropBoxData.top + (cropBoxData.height - newHeight) / 2;
+
+      cropperInstance.setCanvasData({
+        left: left,
+        top: top,
+        width: newWidth,
+        height: newHeight
+      });
+      showToast('Foto enquadrada 100% inteira sem cortes! 🖼️');
+    }
+
+    function closeCropperModal() {
+      const modal = document.getElementById('cropper-modal');
+      modal.classList.remove('active');
+      if (cropperInstance) {
+        cropperInstance.destroy();
+        cropperInstance = null;
+      }
+    }
+
+    function applyCroppedBanner() {
+      if (!cropperInstance) return;
+      try {
+        const croppedCanvas = cropperInstance.getCroppedCanvas({
+          width: 800,
+          height: 280,
+          fillColor: '#090d16',
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: 'high'
+        });
+
+        if (croppedCanvas) {
+          const croppedDataUrl = croppedCanvas.toDataURL('image/jpeg', 0.92);
+          imageStore.banner = croppedDataUrl;
+
+          const preview = document.getElementById('banner-preview');
+          if (preview) preview.src = croppedDataUrl;
+
+          closeCropperModal();
+          showToast('Foto de Capa Enquadrada 100% Sem Cortes! 🚀');
+        }
+      } catch (e) {
+        console.warn('Cropper CORS fallback:', e);
+        closeCropperModal();
+        showToast('Enquadramento de capa ajustado! Clique em "Salvar Imagens & Dados do Perfil" para publicar.');
+      }
+    }
+
+    function loadCompanyLeads() {
+      const leadsKey = `bf_leads_${activeSlug}`;
+      let leads = [];
+      try {
+        leads = JSON.parse(localStorage.getItem(leadsKey) || '[]');
+      } catch (e) {
+        leads = [];
+      }
+
+      const sessionKey = `bf_customer_${activeSlug}`;
+      const sessionData = localStorage.getItem(sessionKey);
+      if (sessionData) {
+        try {
+          const cust = JSON.parse(sessionData);
+          if (cust && cust.name && !leads.some(l => l.whatsapp === cust.whatsapp)) {
+            leads.unshift(cust);
+          }
+        } catch (e) {}
+      }
+
+      sampleCustomers = leads;
+      renderCRMTable(sampleCustomers);
+      renderTrafficOriginAnalytics();
+
+      const totalLeads = sampleCustomers.length;
+      const totalVip = sampleCustomers.filter(c => c.vip).length;
+      
+      if (document.getElementById('m-leads')) document.getElementById('m-leads').textContent = totalLeads;
+      if (document.getElementById('m-vip')) document.getElementById('m-vip').textContent = totalVip;
+      if (document.getElementById('m-coupons')) document.getElementById('m-coupons').textContent = totalLeads;
+
+      const viewsEl = document.getElementById('m-views');
+      const viewsCount = viewsEl ? parseInt(viewsEl.textContent || '0') : 0;
+      if (viewsCount > 0 && document.getElementById('m-conversion-rate')) {
+        const rate = ((totalLeads / viewsCount) * 100).toFixed(1);
+        document.getElementById('m-conversion-rate').textContent = `Taxa de conversão: ${rate}%`;
+      }
+    }
+
+    function loadDynamicTenant() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryTenant = urlParams.get('tenant');
+      const isMasterMode = urlParams.get('master') === 'true';
+      
+      let customTenants = {};
+      try {
+        customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}');
+      } catch (e) {
+        customTenants = {};
+      }
+      const allTenants = { ...defaultTenants, ...customTenants };
+
+      activeSlug = (activeSlug || 'medfarma').toLowerCase().trim();
+
+      if (queryTenant && allTenants[queryTenant.toLowerCase().trim()]) {
+        activeSlug = queryTenant.toLowerCase().trim();
+      } else {
+        const savedSlug = localStorage.getItem('bf_active_admin_slug');
+        if (savedSlug && allTenants[savedSlug.toLowerCase().trim()]) {
+          activeSlug = savedSlug.toLowerCase().trim();
+        } else {
+          activeSlug = 'medfarma';
+        }
+      }
+      localStorage.setItem('bf_active_admin_slug', activeSlug);
+
+      const selector = document.getElementById('company-selector-admin');
+      if (selector) {
+        if (isMasterMode) {
+          selector.style.display = 'block';
+          selector.innerHTML = '';
+          Object.keys(allTenants).forEach(slug => {
+            const t = allTenants[slug];
+            const option = document.createElement('option');
+            option.value = slug;
+            option.textContent = t.name;
+            if (slug === activeSlug) option.selected = true;
+            selector.appendChild(option);
+          });
+        } else {
+          selector.style.display = 'none';
+        }
+      }
+
+      const btnTestLock = document.getElementById('btn-test-email-lock');
+      if (btnTestLock) {
+        btnTestLock.style.display = isMasterMode ? 'inline-flex' : 'none';
+      }
+
+      const tenant = allTenants[activeSlug] || allTenants['medfarma'];
+      if (tenant) {
+        checkEmailConfirmation(tenant);
+        if (document.getElementById('admin-company-name')) document.getElementById('admin-company-name').textContent = tenant.name || 'Empresa';
+        if (document.getElementById('admin-company-niche')) document.getElementById('admin-company-niche').textContent = tenant.niche || 'Geral';
+
+        const publicBtn = document.getElementById('link-public-page');
+        if (publicBtn) {
+          const isLocal = window.location.protocol.startsWith('file');
+          let targetUrl = `../index.html?tenant=${activeSlug}`;
+          if (isLocal) {
+            targetUrl = `${window.location.pathname.replace('/admin/empresa.html', '/index.html')}?tenant=${activeSlug}`;
+          }
+          publicBtn.href = `${targetUrl}&_t=${Date.now()}`;
+          publicBtn.target = '_blank';
+        }
+
+        if (document.getElementById('m-views')) document.getElementById('m-views').textContent = tenant.views || 0;
+
+        if (document.getElementById('config-name')) document.getElementById('config-name').value = tenant.name || '';
+        if (document.getElementById('config-bio-desc')) document.getElementById('config-bio-desc').value = tenant.bio || (tenant.name + ' • ' + (tenant.niche || 'Saúde & Bem-Estar'));
+        if (document.getElementById('config-niche')) document.getElementById('config-niche').value = tenant.niche || 'Saúde, Farmácia & Bem-Estar';
+        if (document.getElementById('config-email')) document.getElementById('config-email').value = tenant.email || '';
+        if (document.getElementById('config-whatsapp')) document.getElementById('config-whatsapp').value = tenant.whatsapp || '';
+        if (document.getElementById('config-instagram')) document.getElementById('config-instagram').value = tenant.instagram || ('@' + activeSlug);
+        if (document.getElementById('config-color')) document.getElementById('config-color').value = tenant.primaryColor || '#10b981';
+        
+        updateQrCodePreview();
+        
+        const addressVal = tenant.address || 'Av. Brasil, 450 - Centro';
+        const hoursConfig = tenant.hoursConfig || {
+          weekday: '08:00 às 22:00',
+          saturday: '08:00 às 18:00',
+          sunday: 'Fechado'
+        };
+
+        if (document.getElementById('config-address')) document.getElementById('config-address').value = addressVal;
+        if (document.getElementById('config-hours-weekday')) document.getElementById('config-hours-weekday').value = hoursConfig.weekday || '08:00 às 22:00';
+        if (document.getElementById('config-hours-saturday')) document.getElementById('config-hours-saturday').value = hoursConfig.saturday || '08:00 às 18:00';
+        if (document.getElementById('config-hours-sunday')) document.getElementById('config-hours-sunday').value = hoursConfig.sunday || 'Fechado';
+
+        updateAdminMapPreview(addressVal);
+        updateAdminHoursPreviewAll();
+
+        if (document.getElementById('config-discount-badge')) document.getElementById('config-discount-badge').value = tenant.discountBadge || '5% OFF';
+        if (document.getElementById('config-campaign-title')) document.getElementById('config-campaign-title').value = tenant.campaignTitle || `Ganhe ${tenant.discountBadge || '5% OFF'} na 1ª compra + Acesso ao Grupo VIP`;
+        if (document.getElementById('config-coupon-code')) document.getElementById('config-coupon-code').value = tenant.couponCode || (activeSlug === 'medfarma' ? 'MED10' : 'PROMO5');
+        
+        const vipUrlVal = tenant.vipGroupUrl || `https://chat.whatsapp.com/demo${(activeSlug || 'VIP').toUpperCase()}`;
+        if (document.getElementById('config-vip-group')) document.getElementById('config-vip-group').value = vipUrlVal;
+        if (document.getElementById('config-vip-group-cupons')) document.getElementById('config-vip-group-cupons').value = vipUrlVal;
+
+        if (document.getElementById('logo-preview') && tenant.logo) {
+          document.getElementById('logo-preview').src = tenant.logo;
+        }
+        if (tenant.banner) {
+          if (document.getElementById('banner-preview')) document.getElementById('banner-preview').src = tenant.banner;
+        }
+
+        // Carregar Formas de Pagamento Selecionadas
+        const pays = tenant.payments || ['Pix Instantâneo', 'Cartão de Crédito/Débito', 'Dinheiro em Espécie'];
+        if (document.getElementById('pay-pix')) document.getElementById('pay-pix').checked = pays.some(p => p.toLowerCase().includes('pix'));
+        if (document.getElementById('pay-card')) document.getElementById('pay-card').checked = pays.some(p => p.toLowerCase().includes('cartão') || p.toLowerCase().includes('débito'));
+        if (document.getElementById('pay-cash')) document.getElementById('pay-cash').checked = pays.some(p => p.toLowerCase().includes('dinheiro') || p.toLowerCase().includes('espécie'));
+        if (document.getElementById('pay-meal')) document.getElementById('pay-meal').checked = pays.some(p => p.toLowerCase().includes('refeição') || p.toLowerCase().includes('vr') || p.toLowerCase().includes('va'));
+
+        const customPays = pays.filter(p => 
+          !p.toLowerCase().includes('pix') && 
+          !p.toLowerCase().includes('cartão') && 
+          !p.toLowerCase().includes('dinheiro') && 
+          !p.toLowerCase().includes('refeição')
+        ).join(', ');
+        if (document.getElementById('pay-custom')) document.getElementById('pay-custom').value = customPays;
+
+        if (tenant.highlights && tenant.highlights.length >= 3) {
+          if (document.getElementById('h1-name')) document.getElementById('h1-name').value = tenant.highlights[0].name || '';
+          if (document.getElementById('h1-price')) document.getElementById('h1-price').value = tenant.highlights[0].price || '';
+          if (document.getElementById('h1-preview')) document.getElementById('h1-preview').src = tenant.highlights[0].img || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400';
+
+          if (document.getElementById('h2-name')) document.getElementById('h2-name').value = tenant.highlights[1].name || '';
+          if (document.getElementById('h2-price')) document.getElementById('h2-price').value = tenant.highlights[1].price || '';
+          if (document.getElementById('h2-preview')) document.getElementById('h2-preview').src = tenant.highlights[1].img || 'https://images.unsplash.com/photo-1576602976047-174e57a47881?w=400';
+
+          if (document.getElementById('h3-name')) document.getElementById('h3-name').value = tenant.highlights[2].name || '';
+          if (document.getElementById('h3-price')) document.getElementById('h3-price').value = tenant.highlights[2].price || '';
+          if (document.getElementById('h3-preview')) document.getElementById('h3-preview').src = tenant.highlights[2].img || 'https://images.unsplash.com/photo-1585435557343-3b092031a831?w=400';
+        }
+      }
+    }
+
+    function checkEmailConfirmation(tenant) {
+      const lockModal = document.getElementById('modal-email-confirm-lock');
+      const badgeStatus = document.getElementById('badge-email-confirm-status');
+      if (!tenant) return;
+
+      const isConfirmed = tenant.emailConfirmed === true;
+
+      if (badgeStatus) {
+        if (isConfirmed) {
+          badgeStatus.style.background = 'rgba(16, 185, 129, 0.15)';
+          badgeStatus.style.color = '#10b981';
+          badgeStatus.style.border = '1px solid #10b981';
+          badgeStatus.innerHTML = '🟢 E-mail Confirmado';
+        } else {
+          badgeStatus.style.background = 'rgba(245, 158, 11, 0.15)';
+          badgeStatus.style.color = '#f59e0b';
+          badgeStatus.style.border = '1px solid #f59e0b';
+          badgeStatus.innerHTML = '⚠️ E-mail Pendente (Bloqueado)';
+        }
+      }
+
+      if (lockModal) {
+        if (!isConfirmed) {
+          const lockCompany = document.getElementById('lock-company-name');
+          const lockEmail = document.getElementById('lock-user-email');
+          if (lockCompany) lockCompany.textContent = tenant.name || 'Empresa';
+          if (lockEmail) lockEmail.textContent = tenant.email || 'contato@empresa.com.br';
+          lockModal.style.display = 'flex';
+          lockModal.classList.add('active');
+        } else {
+          lockModal.style.display = 'none';
+          lockModal.classList.remove('active');
+        }
+      }
+    }
+
+    function checkAndOpenEmailConfirmModal() {
+      let customTenants = {};
+      try { customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}'); } catch(e) {}
+      const tenantObj = getOrCááreateTenantObject(activeSlug);
+      checkEmailConfirmation(tenantObj);
+      if (tenantObj.emailConfirmed === true) {
+        showToast('E-mail j está confirmado e verificado! 🟢');
+      }
+    }
+
+    function verifyConfirmationCode() {
+      const codeInput = document.getElementById('input-confirm-code');
+      const code = codeInput ? codeInput.value.trim() : '';
+
+      if (!code || code.length < 4) {
+        showToast('Digite o código de 6 dígitos recebido por e-mail.');
+        return;
+      }
+
+      confirmTenantEmail();
+    }
+
+    function quickConfirmEmailSimulated() {
+      confirmTenantEmail();
+    }
+
+    function confirmTenantEmail() {
+      let customTenants = {};
+      try { customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}'); } catch(e) {}
+      
+      const tenantObj = getOrCááreateTenantObject(activeSlug);
+      tenantObj.emailConfirmed = true;
+
+      customTenants[activeSlug] = tenantObj;
+      localStorage.setItem('bf_custom_tenants', JSON.stringify(customTenants));
+
+      const lockModal = document.getElementById('modal-email-confirm-lock');
+      if (lockModal) {
+        lockModal.style.display = 'none';
+        lockModal.classList.remove('active');
+      }
+
+      loadDynamicTenant();
+      showToast('🎉 E-mail Confirmado com Sucesso! Acesso liberado ao Painel.');
+    }
+
+    function toggleEmailConfirmationForTesting() {
+      let customTenants = {};
+      try { customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}'); } catch(e) {}
+      
+      const tenantObj = getOrCááreateTenantObject(activeSlug);
+      const newStatus = !(tenantObj.emailConfirmed === true);
+      tenantObj.emailConfirmed = newStatus;
+
+      customTenants[activeSlug] = tenantObj;
+      localStorage.setItem('bf_custom_tenants', JSON.stringify(customTenants));
+
+      loadDynamicTenant();
+      if (newStatus) {
+        showToast('Status alterado: E-mail Confirmado! 🟢');
+      } else {
+        showToast('Status alterado: E-mail Pendente! Bloqueio ativado. ⚠️');
+      }
+    }
+
+    let resendTimer = null;
+    function resendConfirmationEmail() {
+      const btn = document.getElementById('btn-resend-email');
+      if (!btn || btn.disabled) return;
+
+      const tenant = getOrCááreateTenantObject(activeSlug);
+      showToast(`📩 Novo e-mail de confirmação enviado para ${tenant.email || 'seu e-mail'}!`);
+
+      let count = 60;
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      btn.textContent = `Aguarde ${count}s para reenviar`;
+
+      if (resendTimer) clearInterval(resendTimer);
+      resendTimer = setInterval(() => {
+        count--;
+        if (count <= 0) {
+          clearInterval(resendTimer);
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.textContent = '📩 Reenviar E-mail de Confirmação';
+        } else {
+          btn.textContent = `Aguarde ${count}s para reenviar`;
+        }
+      }, 1000);
+    }
+
+    function updateAdminMapPreview(addressStr) {
+      const iframe = document.getElementById('admin-map-preview-iframe');
+      if (!iframe || !addressStr) return;
+      const q = encodeURIComponent(addressStr);
+      iframe.src = `https://maps.google.com/maps?q=${q}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+    }
+
+    function updateAdminHoursStatusPreview(hoursStr) {
+      const badge = document.getElementById('admin-hours-status-badge');
+      if (!badge) return;
+
+      if (!hoursStr) {
+        badge.style.background = 'rgba(16,185,129,0.15)';
+        badge.style.color = '#10b981';
+        badge.style.borderColor = '#10b981';
+        badge.textContent = '🟢 Aberto Agora';
+        return;
+      }
+
+      const lower = hoursStr.toLowerCase();
+      if (lower.includes('24h') || lower.includes('24 horas')) {
+        badge.style.background = 'rgba(16,185,129,0.15)';
+        badge.style.color = '#10b981';
+        badge.style.borderColor = '#10b981';
+        badge.textContent = '🟢 Aberto 24 Horas';
+        return;
+      }
+
+      const times = hoursStr.match(/(\d{1,2})[:h](\d{2})?\s*(?:às|as|-|a)\s*(\d{1,2})[:h](\d{2})?/i);
+      if (!times) {
+        badge.style.background = 'rgba(16,185,129,0.15)';
+        badge.style.color = '#10b981';
+        badge.style.borderColor = '#10b981';
+        badge.textContent = '🟢 Ativo';
+        return;
+      }
+
+      const startHour = parseInt(times[1], 10);
+      const startMin = times[2] ? parseInt(times[2], 10) : 0;
+      const endHour = parseInt(times[3], 10);
+      const endMin = times[4] ? parseInt(times[4], 10) : 0;
+
+      const now = new Date();
+      const currentMin = now.getHours() * 60 + now.getMinutes();
+      const startTotalMin = startHour * 60 + startMin;
+      const endTotalMin = endHour * 60 + endMin;
+
+      let isOpen = false;
+      if (endTotalMin > startTotalMin) {
+        isOpen = currentMin >= startTotalMin && currentMin < endTotalMin;
+      } else {
+        isOpen = currentMin >= startTotalMin || currentMin < endTotalMin;
+      }
+
+      if (isOpen) {
+        badge.style.background = 'rgba(16,185,129,0.15)';
+        badge.style.color = '#10b981';
+        badge.style.borderColor = '#10b981';
+        badge.textContent = `🟢 Aberto Agora (${hoursStr})`;
+      } else {
+        badge.style.background = 'rgba(239,68,68,0.15)';
+        badge.style.color = '#ef4444';
+        badge.style.borderColor = '#ef4444';
+        badge.textContent = `🔴 Fechado no Momento (${hoursStr})`;
+      }
+    }
+
+    function renderTrafficOriginAnalytics() {
+      const container = document.getElementById('traffic-origin-grid');
+      if (!container) return;
+
+      const statsKey = `bf_traffic_stats_${activeSlug}`;
+      let stats = {};
+      try { stats = JSON.parse(localStorage.getItem(statsKey) || '{}'); } catch(e) {}
+
+      const leadsBySource = {};
+      sampleCustomers.forEach(c => {
+        const src = c.source || 'Acesso Direto';
+        leadsBySource[src] = (leadsBySource[src] || 0) + 1;
+      });
+
+      const channels = [
+        { name: 'Instagram', icon: '📸', defaultViews: 140, defaultLeads: 28, color: '#e1306c' },
+        { name: 'QR Code Balcão', icon: '📲', defaultViews: 85, defaultLeads: 32, color: '#f59e0b' },
+        { name: 'Facebook', icon: '📘', defaultViews: 45, defaultLeads: 8, color: '#1877f2' },
+        { name: 'WhatsApp', icon: '💬', defaultViews: 60, defaultLeads: 14, color: '#25d366' },
+        { name: 'Acesso Direto', icon: '🌐', defaultViews: 25, defaultLeads: 4, color: '#3b82f6' }
+      ];
+
+      container.innerHTML = channels.map(ch => {
+        const views = stats[ch.name] || (sampleCustomers.length > 0 ? ((leadsBySource[ch.name] || 0) * 3 + 5) : ch.defaultViews);
+        const leads = leadsBySource[ch.name] !== undefined ? leadsBySource[ch.name] : (sampleCustomers.length === 0 ? ch.defaultLeads : 0);
+        const convRate = views > 0 ? ((leads / views) * 100).toFixed(1) : '0.0';
+
+        return `
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-size: 0.85rem; font-weight: 700; color: #fff;">${ch.icon} ${ch.name}</span>
+              <span style="font-size: 0.72rem; font-weight: 800; color: ${ch.color}; background: rgba(255,255,255,0.05); padding: 0.15rem 0.4rem; border-radius: 4px;">${convRate}% conv.</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <span style="font-size: 1.3rem; font-weight: 800; color: #fff;">${leads} <small style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">leads</small></span>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">${views} acessos</span>
+            </div>
+            <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.08); border-radius: 99px; margin-top: 0.6rem; overflow: hidden;">
+              <div style="width: ${Math.min(100, parseFloat(convRate))}%; height: 100%; background: ${ch.color}; border-radius: 99px;"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      updateGeneratedLinkPreview();
+    }
+
+    function updateGeneratedLinkPreview() {
+      const channelSelect = document.getElementById('link-tag-channel');
+      const urlInput = document.getElementById('generated-tagged-url');
+      if (!channelSelect || !urlInput) return;
+
+      const channelVal = channelSelect.value;
+      const shortCodeMap = {
+        'instagram': 'ig',
+        'qrcode_balcao': 'qr',
+        'facebook': 'fb',
+        'whatsapp': 'wa',
+        'anuncio_pago': 'ads'
+      };
+      const shortCode = shortCodeMap[channelVal] || channelVal;
+
+      // URL Ultra-Curta VIP de Produção (.bio)
+      const cleanShortUrl = `https://${activeSlug}.bio/${shortCode}`;
+      urlInput.value = cleanShortUrl;
+    }
+
+    function copyTaggedLink() {
+      const urlInput = document.getElementById('generated-tagged-url');
+      if (!urlInput) return;
+
+      navigator.clipboard.writeText(urlInput.value);
+      alert(`Link rastáreado copiado com sucesso!\n\n${urlInput.value}\n\nCole no seu Instagram, WhatsApp ou configure no QR Code!`);
+    }
+
+    function getSourceBadgeHtml(sourceName) {
+      const src = (sourceName || 'Acesso Direto').toLowerCase();
+      if (src.includes('insta')) return `<span style="background: rgba(225, 48, 108, 0.15); color: #e1306c; border: 1px solid rgba(225, 48, 108, 0.4); padding: 0.15rem 0.5rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700;">📸 Instagram</span>`;
+      if (src.includes('qr') || src.includes('balcao') || src.includes('panfleto')) return `<span style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); padding: 0.15rem 0.5rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700;">📲 QR Code Balcão</span>`;
+      if (src.includes('face') || src.includes('fb')) return `<span style="background: rgba(24, 119, 242, 0.15); color: #1877f2; border: 1px solid rgba(24, 119, 242, 0.4); padding: 0.15rem 0.5rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700;">📘 Facebook</span>`;
+      if (src.includes('whats') || src.includes('wa')) return `<span style="background: rgba(37, 211, 102, 0.15); color: #25d366; border: 1px solid rgba(37, 211, 102, 0.4); padding: 0.15rem 0.5rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700;">💬 WhatsApp</span>`;
+      return `<span style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.4); padding: 0.15rem 0.5rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700;">🌐 Direto / Google</span>`;
+    }
+
+    function renderCRMTable(list) {
+      const tbody = document.getElementById('company-customers-tbody');
+      if (!tbody) return;
+
+      if (!list || list.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="empty-state-card">
+              Nenhum cliente cadastrado ainda.<br>
+              <span style="font-size: 0.8rem; color: var(--text-dim);">Compartilhe o link da sua bio ou imprima o QR Code para capturar novos leads!</span>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = list.map((c, index) => {
+        const isQr = (c.source || '').toLowerCase().includes('qr');
+        const sourceBadge = getSourceBadgeHtml(c.source);
+        const validBadge = isQr 
+          ? `<span style="background:rgba(16,185,129,0.15); color:#34d399; font-size:0.72rem; font-weight:800; padding:0.2rem 0.5rem; border-radius:99px; border:1px solid rgba(16,185,129,0.3); display:inline-block; margin-top:0.2rem;">✅ Validado (${c.scanCount || 1}x)</span>`
+          : `<span style="background:rgba(59,130,246,0.15); color:#60a5fa; font-size:0.72rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:99px; display:inline-block; margin-top:0.2rem;">💬 Bio Lead</span>`;
+
+        return `
+          <tr style="border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 0.75rem;">
+              <strong>${escapeHtml(c.name)}</strong>
+              <div>${validBadge}</div>
+            </td>
+            <td style="padding: 0.75rem;">${escapeHtml(c.whatsapp)}</td>
+            <td style="padding: 0.75rem;">${escapeHtml(c.address || c.bairro)}</td>
+            <td style="padding: 0.75rem;">${sourceBadge}</td>
+            <td style="padding: 0.75rem;"><code style="color: var(--tenant-primary); background: rgba(0,0,0,0.4); padding: 0.2rem 0.5rem; border-radius: 4px;">${escapeHtml(c.claimedCoupon || 'MED10')}</code></td>
+            <td style="padding: 0.75rem; font-size: 0.76rem; color: var(--text-muted);">
+              <div>1º Cad: ${escapeHtml(c.date || 'Recente')}</div>
+              ${c.lastScanDate ? `<div style="color:#f59e0b; font-size:0.72rem; margin-top:0.15rem;">Último Scan: ${escapeHtml(c.lastScanDate)}</div>` : ''}
+            </td>
+            <td style="padding: 0.75rem; text-align: right;">
+              <div style="display: flex; gap: 0.35rem; justify-content: flex-end; align-items: center;">
+                <button type="button" onclick="viewLeadAudit(${index})" class="btn-action btn-secondary-action" style="display: inline-flex; width: auto; padding: 0.3rem 0.55rem; font-size: 0.75rem; border-color: rgba(59,130,246,0.4); color: #60a5fa;" title="Ver IP e Auditoria">🔍 IP</button>
+                <a href="https://wa.me/${c.whatsapp ? c.whatsapp.replace(/\D/g, '') : ''}?text=Oláá%20${encodeURIComponent(c.name)}!%20Vimos%20seu%20cadastro%20com%20o%20cupom%20${encodeURIComponent(c.claimedCoupon || 'MED10')}" target="_blank" class="btn-action btn-secondary-action" style="display: inline-flex; width: auto; padding: 0.3rem 0.55rem; font-size: 0.75rem;">💬 Whats</a>
+                <button type="button" onclick="deleteCustomer(${index})" class="btn-action btn-secondary-action" style="display: inline-flex; width: auto; padding: 0.3rem 0.45rem; font-size: 0.75rem; border-color: rgba(239,68,68,0.4); color: #ef4444; cursor: pointer;" title="Excluir Lead">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function updateQrCodePreview() {
+      const isLocal = window.location.protocol.includes('http');
+      let baseUrl = window.location.href.split('/admin/')[0] + '/index.html';
+      if (!isLocal) {
+        baseUrl = `${window.location.pathname.replace('/admin/empresa.html', '/index.html')}`;
+      }
+      const targetUrl = `${baseUrl}?tenant=${activeSlug}&src=qrcode`;
+
+      const urlInput = document.getElementById('qr-encoded-url');
+      if (urlInput) urlInput.value = targetUrl;
+
+      const titleVal = document.getElementById('qr-poster-title') ? document.getElementById('qr-poster-title').value : 'Escaneie para Ganhar Desconto & Participar do Sorteio!';
+      const titleDisplay = document.getElementById('qr-poster-title-display');
+      if (titleDisplay) titleDisplay.textContent = titleVal;
+
+      const companyBadge = document.getElementById('qr-company-badge');
+      if (companyBadge && currentTenant) companyBadge.textContent = (currentTenant.name || activeSlug).toUpperCase();
+
+      const qrImg = document.getElementById('qr-code-img-preview');
+      if (qrImg) {
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(targetUrl)}`;
+      }
+    }
+
+    function printQrPoster() {
+      const title = document.getElementById('qr-poster-title') ? document.getElementById('qr-poster-title').value : 'Escaneie para Ganhar Desconto!';
+      const companyName = (currentTenant ? currentTenant.name : 'Nossa Empresa').toUpperCase();
+      const targetUrl = document.getElementById('qr-encoded-url') ? document.getElementById('qr-encoded-url').value : window.location.href;
+      const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(targetUrl)}`;
+      const primaryColor = currentTenant ? (currentTenant.primaryColor || '#10b981') : '#10b981';
+
+      const printWin = window.open('', '_blank');
+      printWin.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Cartaz QR Code - ${companyName}</title>
+          <style>
+            @page { size: A4 portrait; margin: 0; }
+            body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #ffffff; color: #0f172a; margin: 0; padding: 3rem 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; box-sizing: border-box; }
+            .badge { background: ${primaryColor}15; color: ${primaryColor}; font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; padding: 0.5rem 1.5rem; border-radius: 99px; border: 2px solid ${primaryColor}; margin-bottom: 1.5rem; }
+            h1 { font-size: 2.4rem; font-weight: 800; color: #0f172a; margin-bottom: 2rem; max-width: 650px; line-height: 1.25; }
+            .qr-box { background: #f8fafc; border: 4px dashed #cbd5e1; border-radius: 24px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+            .qr-img { width: 320px; height: 320px; display: block; }
+            .instructions { font-size: 1.3rem; font-weight: 700; color: #334155; margin-bottom: 0.5rem; }
+            .sub-instructions { font-size: 1rem; color: #64748b; font-weight: 600; }
+            .footer { margin-top: 3rem; font-size: 0.85rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 1rem; width: 80%; }
+        
+    /* Premium Sidebar Layout from Master */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #090d16; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+    }
+
+    .sidebar {
+      width: 260px;
+      background: #0b0f19;
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      z-index: 100;
+    }
+    .sidebar-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .sidebar-brand { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+    .nav-menu { padding: 1.5rem 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.75rem 1rem; border-radius: var(--radius-sm);
+      color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.9rem;
+      cursor: pointer; transition: var(--transition);
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.03); color: #fff; }
+    .nav-item.active { background: rgba(139, 92, 246, 0.1); color: var(--primary); border-left: 3px solid var(--primary); }
+    
+    .sidebar-footer { padding: 1.5rem; border-top: 1px solid var(--border-color); }
+    .btn-logout {
+      width: 100%; display: block; text-align: center; padding: 0.75rem;
+      background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: var(--radius-sm); font-weight: 600; font-size: 0.85rem; cursor: pointer; text-decoration: none;
+      transition: var(--transition);
+    }
+    .btn-logout:hover { background: rgba(239, 68, 68, 0.2); }
+
+    .main-content {
+      flex: 1; padding: 2rem 3rem; overflow-y: auto; height: 100vh;
+    }
+    
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .page-title h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .page-title p { color: var(--text-muted); font-size: 0.95rem; }
+
+    .btn-outline {
+      background: transparent; color: #e2e8f0; border: 1px solid var(--border-color); padding: 0.6rem 0.8rem;
+      border-radius: var(--radius-sm); font-weight: 600; font-size: 0.85rem; cursor: pointer; text-decoration: none; transition: var(--transition); display: inline-flex; align-items: center; gap: 0.3rem;
+    }
+    .btn-outline:hover { background: rgba(255,255,255,0.05); }
+    
+    /* Hide the old layout elements */
+    /* removed hidden layout */
+
+  </style>
+        </head>
+        <body>
+          <div class="badge">${companyName}</div>
+          <h1>${title}</h1>
+          <div class="qr-box">
+            <img class="qr-img" src="${qrSrc}" alt="QR Code">
+          </div>
+          <div class="instructions">📱 Aponte a câmera do seu celular para o QR Code</div>
+          <div class="sub-instructions">Validação rápida de cupons & participação no sorteio presencial</div>
+          <div class="footer">BioFidelidade • Sistema de Validação Presencial</div>
+          <scr` + `ipt>
+            window.onload = function() { window.print(); };
+          </scr` + `ipt>
+        </body>
+        </html>
+      `);
+      printWin.document.close();
+    }
+
+    async function downloadQrCodeImage() {
+        try {
+          const targetUrl = document.getElementById('qr-encoded-url') ? document.getElementById('qr-encoded-url').value : window.location.href;
+          const qrSrc = https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=;
+          
+          const response = await fetch(qrSrc);
+          const blob = await response.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = qrcode_.png;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+          console.error('Erro ao baixar QR code:', error);
+          alert('Não foi possível baixar o QR Code diretamente. Clique com o botão direito na imagem gerada e selecione Salvar.');
+        }
+      }
+    }
+
+    function clearAllLeads() {
+      if (sampleCustomers.length === 0) {
+        alert('Nenhum cliente para limpar.');
+        return;
+      }
+
+      if (confirm('Tem certeza de que deseja apagar TODOS os cadastros de teste desta empresa?')) {
+        sampleCustomers = [];
+        const leadsKey = `bf_leads_${activeSlug}`;
+        localStorage.removeItem(leadsKey);
+
+        const sessionKey = `bf_customer_${activeSlug}`;
+        localStorage.removeItem(sessionKey);
+
+        loadCompanyLeads();
+        alert('Todos os cadastros de teste foram removidos!');
+      }
+    }
+
+    function filterCRMTable() {
+      const query = document.getElementById('search-crm').value.toLowerCase().trim();
+      const filtered = sampleCustomers.filter(c => 
+        (c.name && c.name.toLowerCase().includes(query)) ||
+        (c.whatsapp && c.whatsapp.includes(query)) ||
+        (c.address && c.address.toLowerCase().includes(query)) ||
+        (c.source && c.source.toLowerCase().includes(query)) ||
+        (c.claimedCoupon && c.claimedCoupon.toLowerCase().includes(query))
+      );
+      renderCRMTable(filtered);
+    }
+
+    function exportCRMList() {
+      if (!sampleCustomers || sampleCustomers.length === 0) {
+        alert('Nenhum cliente disponível para exportar no momento.');
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,Nome,WhatsApp,Endereco,Origem,Cupom,Data\n";
+      sampleCustomers.forEach(c => {
+        csvContent += `"${c.name || ''}","${c.whatsapp || ''}","${c.address || ''}","${c.source || 'Acesso Direto'}","${c.claimedCoupon || ''}","${c.date || ''}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `leads_${activeSlug}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function copyBioLink() {
+      const bioUrl = `${window.location.origin}/index.html?tenant=${activeSlug}`;
+      navigator.clipboard.writeText(bioUrl);
+      alert(`Link da Bio copiado para a ááárea de transferência!\n\n${bioUrl}`);
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const eyeIcon = btn.querySelector('svg');
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (eyeIcon) {
+          eyeIcon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>`;
+        }
+      } else {
+        input.type = 'password';
+        if (eyeIcon) {
+          eyeIcon.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>`;
+        }
+      }
+    }
+
+    function switchAdminCompany(slug) {
+      activeSlug = slug;
+      localStorage.setItem('bf_active_admin_slug', activeSlug);
+      loadDynamicTenant();
+      loadCompanyLeads();
+    }
+
+    function handleImageUpload(event, key) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const áreader = new FileReader();
+      áreader.onload = function(e) {
+        imageStore[key] = e.target.result;
+        const preview = document.getElementById(`${key}-preview`);
+        if (preview) preview.src = e.target.result;
+      };
+      áreaderreadAsDataURL(file);
+    }
+
+    function handleLogoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const áreader = new FileReader();
+      áreader.onload = function(e) {
+        imageStore['logo'] = e.target.result;
+        const preview = document.getElementById('logo-preview');
+        if (preview) preview.src = e.target.result;
+      };
+      áreaderreadAsDataURL(file);
+    }
+
+    function handleBannerUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const áreader = new FileReader();
+      áreader.onload = function(e) {
+        imageStore['banner'] = e.target.result;
+        openCropperModal();
+      };
+      áreaderreadAsDataURL(file);
+    }
+
+    function getOrCááreateTenantObject(slug) {
+      let customTenants = {};
+      try { customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}'); } catch(e) {}
+      const def = defaultTenants[slug] || {};
+      const current = customTenants[slug] || {};
+      return { ...def, ...current, slug: slug };
+    }
+
+    function saveHighlights() {
+      try {
+        const h1Img = imageStore.h1 || (document.getElementById('h1-preview') ? document.getElementById('h1-preview').src : '');
+        const h2Img = imageStore.h2 || (document.getElementById('h2-preview') ? document.getElementById('h2-preview').src : '');
+        const h3Img = imageStore.h3 || (document.getElementById('h3-preview') ? document.getElementById('h3-preview').src : '');
+
+        const h1 = { name: document.getElementById('h1-name').value, price: document.getElementById('h1-price').value, img: h1Img };
+        const h2 = { name: document.getElementById('h2-name').value, price: document.getElementById('h2-price').value, img: h2Img };
+        const h3 = { name: document.getElementById('h3-name').value, price: document.getElementById('h3-price').value, img: h3Img };
+
+        let customTenants = {};
+        try { customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}'); } catch(e) {}
+        
+        const tenantObj = getOrCááreateTenantObject(activeSlug);
+        tenantObj.highlights = [h1, h2, h3];
+
+        customTenants[activeSlug] = tenantObj;
+        localStorage.setItem('bf_custom_tenants', JSON.stringify(customTenants));
+
+        loadDynamicTenant();
+        showToast('Produtos em destaque salvos com sucesso!');
+      } catch (err) {
+        showToast('Erro ao salvar produtos: ' + err.message);
+      }
+    }
+
+    function applyDiscountPreset(type) {
+      const dInput = document.getElementById('config-discount-badge');
+      const cInput = document.getElementById('config-coupon-code');
+      const tInput = document.getElementById('config-campaign-title');
+
+      if (type === '5%') {
+        if (dInput) dInput.value = '5% OFF';
+        if (cInput) cInput.value = 'MED10';
+        if (tInput) tInput.value = 'Ganhe 10% OFF na 1ª compra + Acesso ao Grupo VIP';
+      } else if (type === '10%') {
+        if (dInput) dInput.value = '10% OFF';
+        if (cInput) cInput.value = 'MED10';
+        if (tInput) tInput.value = 'Ganhe 10% OFF na 1ª compra + Acesso ao Grupo VIP';
+      } else if (type === 'especial') {
+        if (dInput) dInput.value = 'Desconto Especial';
+        if (cInput) cInput.value = 'PROMO';
+        if (tInput) tInput.value = 'Desconto Especial de Boas-Vindas + Acesso ao Grupo VIP';
+      }
+
+      showToast('Preset de Desconto aplicado!');
+    }
+
+    function updateCampaignTitlePreview(val) {
+      const tInput = document.getElementById('config-campaign-title');
+      if (tInput && val) {
+        tInput.value = `Ganhe ${val} na 1ª compra + Acesso ao Grupo VIP`;
+      }
+    }
+
+    function saveCampaignConfig() {
+      try {
+        const newTitle = document.getElementById('config-campaign-title').value;
+        const newDiscount = document.getElementById('config-discount-badge') ? document.getElementById('config-discount-badge').value : '5% OFF';
+        const newCoupon = document.getElementById('config-coupon-code').value;
+        const newVipLink = document.getElementById('config-vip-group-cupons').value;
+
+        let customTenants = {};
+        try { customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}'); } catch(e) {}
+        
+        const tenantObj = getOrCááreateTenantObject(activeSlug);
+        tenantObj.campaignTitle = newTitle;
+        tenantObj.discountBadge = newDiscount;
+        tenantObj.couponCode = newCoupon;
+        tenantObj.vipGroupUrl = newVipLink;
+
+        customTenants[activeSlug] = tenantObj;
+        localStorage.setItem('bf_custom_tenants', JSON.stringify(customTenants));
+
+        loadDynamicTenant();
+        showToast('Desconto, Cupom e Grupo VIP salvos com sucesso! 🚀');
+      } catch (err) {
+        showToast('Erro ao salvar campanha: ' + err.message);
+      }
+    }
+
+    function savePaymentConfig() {
+      try {
+        const selectedPayments = [];
+        if (document.getElementById('pay-pix') && document.getElementById('pay-pix').checked) selectedPayments.push('Pix Instantâneo');
+        if (document.getElementById('pay-card') && document.getElementById('pay-card').checked) selectedPayments.push('Cartão de Crédito/Débito');
+        if (document.getElementById('pay-cash') && document.getElementById('pay-cash').checked) selectedPayments.push('Dinheiro em Espécie');
+        if (document.getElementById('pay-meal') && document.getElementById('pay-meal').checked) selectedPayments.push('Vale Refeição (VR)');
+
+        const customText = document.getElementById('pay-custom') ? document.getElementById('pay-custom').value.trim() : '';
+        if (customText) {
+          const customItems = customText.split(',').map(s => s.trim()).filter(Boolean);
+          selectedPayments.push(...customItems);
+        }
+
+        let customTenants = {};
+        try { customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}'); } catch(e) {}
+        
+        const tenantObj = getOrCááreateTenantObject(activeSlug);
+        tenantObj.payments = selectedPayments;
+
+        customTenants[activeSlug] = tenantObj;
+        localStorage.setItem('bf_custom_tenants', JSON.stringify(customTenants));
+
+        loadDynamicTenant();
+        showToast('Formas de pagamento salvas com sucesso!');
+      } catch (err) {
+        showToast('Erro ao salvar formas de pagamento: ' + err.message);
+      }
+    }
+
+    function saveProfileConfig() {
+      try {
+        const newName = document.getElementById('config-name').value;
+        const newBioDesc = document.getElementById('config-bio-desc') ? document.getElementById('config-bio-desc').value : '';
+        const newNiche = document.getElementById('config-niche').value;
+        const newEmail = document.getElementById('config-email').value;
+        const newWhatsapp = document.getElementById('config-whatsapp').value;
+        const newInstagram = document.getElementById('config-instagram') ? document.getElementById('config-instagram').value : '';
+        const newColor = document.getElementById('config-color').value;
+        const newVipLink = document.getElementById('config-vip-group').value;
+
+        let customTenants = {};
+        try { customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}'); } catch(e) {}
+        
+        const tenantObj = getOrCááreateTenantObject(activeSlug);
+        tenantObj.name = newName;
+        if (newBioDesc) tenantObj.bio = newBioDesc;
+        tenantObj.niche = newNiche;
+        tenantObj.email = newEmail;
+        tenantObj.whatsapp = newWhatsapp;
+        if (newInstagram) tenantObj.instagram = newInstagram;
+        tenantObj.primaryColor = newColor;
+        tenantObj.vipGroupUrl = newVipLink;
+
+        if (imageStore.logo) tenantObj.logo = imageStore.logo;
+        if (imageStore.banner) tenantObj.banner = imageStore.banner;
+
+        // Se digitou nova senha no perfil, valida a confirmação
+        const newPass = document.getElementById('account-new-password') ? document.getElementById('account-new-password').value.trim() : '';
+        const confirmPass = document.getElementById('account-confirm-password') ? document.getElementById('account-confirm-password').value.trim() : '';
+
+        if (newPass) {
+          if (newPass.length < 6) {
+            showToast('A nova senha precisa ter no mínimo 6 caracteres.');
+            return;
+          }
+          if (newPass !== confirmPass) {
+            showToast('A confirmação da nova senha não confere! Repita a mesma senha.');
+            return;
+          }
+          tenantObj.password = newPass;
+          if (document.getElementById('account-current-password')) document.getElementById('account-current-password').value = '';
+          if (document.getElementById('account-new-password')) document.getElementById('account-new-password').value = '';
+          if (document.getElementById('account-confirm-password')) document.getElementById('account-confirm-password').value = '';
+          if (document.getElementById('password-match-indicator')) document.getElementById('password-match-indicator').textContent = '';
+        }
+
+        customTenants[activeSlug] = tenantObj;
+        localStorage.setItem('bf_custom_tenants', JSON.stringify(customTenants));
+
+        loadDynamicTenant();
+        showToast('Perfil e Dados Salvos com Sucesso! 🚀');
+      } catch (err) {
+        showToast('Erro ao salvar perfil: ' + err.message);
+      }
+    }
+
+    function validatePasswordConfirmation() {
+      const newPass = document.getElementById('account-new-password') ? document.getElementById('account-new-password').value : '';
+      const confirmPass = document.getElementById('account-confirm-password') ? document.getElementById('account-confirm-password').value : '';
+      const indicator = document.getElementById('password-match-indicator');
+
+      if (!confirmPass) {
+        if (indicator) indicator.textContent = '';
+        return true;
+      }
+
+      if (newPass === confirmPass) {
+        if (indicator) {
+          indicator.style.color = '#10b981';
+          indicator.innerHTML = '✓ As senhas são iguais e idênticas!';
+        }
+        return true;
+      } else {
+        if (indicator) {
+          indicator.style.color = '#ef4444';
+          indicator.innerHTML = '❌ As senhas não conferem. Digite a mesma nova senha no campo 3.';
+        }
+        return false;
+      }
+    }
+
+    function savePasswordChangeOnly() {
+      const newPass = document.getElementById('account-new-password') ? document.getElementById('account-new-password').value : '';
+      const confirmPass = document.getElementById('account-confirm-password') ? document.getElementById('account-confirm-password').value : '';
+
+      if (!newPass) {
+        showToast('Digite a nova senha no campo 2.');
+        return;
+      }
+
+      if (newPass.length < 6) {
+        showToast('A nova senha deve ter no mínimo 6 caracteres.');
+        return;
+      }
+
+      if (newPass !== confirmPass) {
+        showToast('A confirmação da senha não confere! Repita a nova senha no campo 3.');
+        return;
+      }
+
+      let customTenants = {};
+      try { customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}'); } catch(e) {}
+      
+      const tenantObj = getOrCááreateTenantObject(activeSlug);
+      tenantObj.password = newPass;
+
+      customTenants[activeSlug] = tenantObj;
+      localStorage.setItem('bf_custom_tenants', JSON.stringify(customTenants));
+
+      if (document.getElementById('account-current-password')) document.getElementById('account-current-password').value = '';
+      if (document.getElementById('account-new-password')) document.getElementById('account-new-password').value = '';
+      if (document.getElementById('account-confirm-password')) document.getElementById('account-confirm-password').value = '';
+      if (document.getElementById('password-match-indicator')) document.getElementById('password-match-indicator').textContent = '';
+
+      showToast('🔑 Nova Senha salva com sucesso! Utilize-a no seu próximo login.');
+    }
+
+
+    function applyHoursPreset(presetType) {
+      const wInput = document.getElementById('config-hours-weekday');
+      const sInput = document.getElementById('config-hours-saturday');
+      const dInput = document.getElementById('config-hours-sunday');
+
+      if (presetType === 'standard') {
+        if (wInput) wInput.value = '08:00 às 22:00';
+        if (sInput) sInput.value = '08:00 às 18:00';
+        if (dInput) dInput.value = 'Fechado';
+      } else if (presetType === 'commercial') {
+        if (wInput) wInput.value = '08:00 às 18:00';
+        if (sInput) sInput.value = '08:00 às 12:00';
+        if (dInput) dInput.value = 'Fechado';
+      } else if (presetType === '24h') {
+        if (wInput) wInput.value = '24 Horas';
+        if (sInput) sInput.value = '24 Horas';
+        if (dInput) dInput.value = '24 Horas';
+      }
+
+      updateAdminHoursPreviewAll();
+      showToast('Preset de horário aplicado!');
+    }
+
+    function updateAdminHoursPreviewAll() {
+      const wVal = document.getElementById('config-hours-weekday') ? document.getElementById('config-hours-weekday').value : '08:00 às 22:00';
+      const sVal = document.getElementById('config-hours-saturday') ? document.getElementById('config-hours-saturday').value : '08:00 às 18:00';
+      const dVal = document.getElementById('config-hours-sunday') ? document.getElementById('config-hours-sunday').value : 'Fechado';
+
+      const summary = `Seg-Sex: ${wVal} | Sáb: ${sVal} | Dom: ${dVal}`;
+      updateAdminHoursStatusPreview(summary);
+    }
+
+    function saveLocationConfig() {
+      try {
+        const newAddress = document.getElementById('config-address').value;
+        const hoursWeekday = document.getElementById('config-hours-weekday') ? document.getElementById('config-hours-weekday').value : '08:00 às 22:00';
+        const hoursSaturday = document.getElementById('config-hours-saturday') ? document.getElementById('config-hours-saturday').value : '08:00 às 18:00';
+        const hoursSunday = document.getElementById('config-hours-sunday') ? document.getElementById('config-hours-sunday').value : 'Fechado';
+
+        const hoursConfig = {
+          weekday: hoursWeekday,
+          saturday: hoursSaturday,
+          sunday: hoursSunday
+        };
+
+        const summaryHours = `Seg-Sex: ${hoursWeekday} | Sáb: ${hoursSaturday} | Dom: ${hoursSunday}`;
+
+        let customTenants = {};
+        try { customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}'); } catch(e) {}
+        
+        const tenantObj = getOrCááreateTenantObject(activeSlug);
+        tenantObj.address = newAddress;
+        tenantObj.hoursConfig = hoursConfig;
+        tenantObj.hours = summaryHours;
+
+        customTenants[activeSlug] = tenantObj;
+        localStorage.setItem('bf_custom_tenants', JSON.stringify(customTenants));
+
+        loadDynamicTenant();
+        showToast('Localização e Horários de Fim de Semana salvos com sucesso! 🚀');
+      } catch (err) {
+        showToast('Erro ao salvar localização: ' + err.message);
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, function (m) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        }[m];
+      });
+    }
+
+    function broadcastUpdate() {
+      try {
+        const channel = new BroadcastChannel('bf_sync_channel');
+        channel.postMessage({ type: 'tenant_updated', slug: activeSlug, timestamp: Date.now() });
+      } catch (e) {}
+    }
+
+    function showToast(msg) {
+      broadcastUpdate();
+      const toast = document.getElementById('admin-toast');
+      const text = document.getElementById('admin-toast-text');
+      if (!toast || !text) return;
+      text.textContent = msg;
+      toast.style.transform = 'translateY(0)';
+      toast.style.opacity = '1';
+      setTimeout(() => {
+        toast.style.transform = 'translateY(120px)';
+        toast.style.opacity = '0';
+      }, 2400);
+    }
+  </script>
+
+  <!-- NOTIFICAÇÃO TOAST FLUIDA NÃO-BLOQUEANTE (0ms DELAY) -->
+  <div id="admin-toast" style="position: fixed; bottom: 28px; right: 28px; z-index: 999999; background: #10b981; color: #ffffff; padding: 0.85rem 1.4rem; border-radius: 14px; font-weight: 800; font-size: 0.9rem; box-shadow: 0 12px 30px rgba(16,185,129,0.4), inset 0 1px 0 rgba(255,255,255,0.3); display: flex; align-items: center; gap: 0.6rem; transform: translateY(120px); opacity: 0; transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none;">
+    <span style="font-size: 1.2rem;">✓</span>
+    <span id="admin-toast-text">Alterações salvas com sucesso!</span>
+  </div>
+
+  <!-- MODAL DE AUDITORIA DE LEAD DO CRM (IP, HORÁRIOS & LOCALIZAÇÃO) -->
+  <div class="modal-overlay" id="modal-audit-lead">
+    <div class="modal-box" style="max-width: 440px; padding: 1.5rem; position: relative;">
+      <button onclick="closeModal('modal-audit-lead')" title="Fechar" aria-label="Fechar" style="position: absolute; right: 14px; top: 14px; background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer;">
+        &times;
+      </button>
+
+      <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem;">
+        <span style="font-size: 1.4rem;">🔍</span>
+        <div>
+          <h4 style="font-size: 1.1rem; color: #fff; margin: 0; font-weight: 800;">Ficha de Auditoria do Lead</h4>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Dados técnicos de validação e rastááreamento</span>
+        </div>
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; font-size: 0.82rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 0.5rem;">
+          <span style="color: var(--text-muted);">Nome do Cliente:</span>
+          <strong id="audit-lead-name" style="color: #fff;">-</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 0.5rem;">
+          <span style="color: var(--text-muted);">WhatsApp:</span>
+          <strong id="audit-lead-whats" style="color: #fff;">-</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 0.5rem;">
+          <span style="color: var(--text-muted);">Endereço / Bairro:</span>
+          <strong id="audit-lead-address" style="color: #fff;">-</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 0.5rem;">
+          <span style="color: var(--text-muted);">🌐 Endereço IP Capturado:</span>
+          <code id="audit-lead-ip" style="color: var(--tenant-primary); background: rgba(0,0,0,0.5); padding: 0.15rem 0.4rem; border-radius: 4px;">-</code>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 0.5rem;">
+          <span style="color: var(--text-muted);">📍 Localização / Origem:</span>
+          <strong id="audit-lead-location" style="color: #34d399;">-</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 0.5rem;">
+          <span style="color: var(--text-muted);">📅 Data/Hora do 1º Cadastro:</span>
+          <strong id="audit-lead-regdate" style="color: #fff;">-</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 0.5rem;">
+          <span style="color: var(--text-muted);">📱 Última Validação (QR Code):</span>
+          <strong id="audit-lead-lastscan" style="color: #f59e0b;">-</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">🔢 Total de Scans/Check-ins:</span>
+          <strong id="audit-lead-scancount" style="color: var(--tenant-primary);">1 Check-in</strong>
+        </div>
+      </div>
+
+      <button type="button" class="btn-action btn-secondary-action" onclick="closeModal('modal-audit-lead')" style="width: 100%;">
+        Fechar Ficha de Auditoria
+      </button>
+    </div>
+  </div>
+</body>
+</html>
+
