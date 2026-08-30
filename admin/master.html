@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BioFidelidade | SaaS Master Admin</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      /* Deep Premium Dark Theme */
+      --bg-color: #050505;
+      --sidebar-bg: rgba(10, 10, 10, 0.4);
+      --card-bg: rgba(25, 25, 25, 0.5);
+      --card-hover: rgba(35, 35, 35, 0.7);
+      --border-color: rgba(255,255,255,0.08);
+      --border-highlight: rgba(255,255,255,0.15);
+      --text-main: #f8fafc;
+      --text-muted: #a1a1aa;
+      --primary: #8b5cf6;
+      --primary-hover: #7c3aed;
+      --primary-glow: rgba(139, 92, 246, 0.35);
+      --accent: #10b981;
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      
+      --shadow-card: 0 16px 40px -8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+    /* Layout */
+    .sidebar {
+      width: 280px;
+      background: var(--sidebar-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+      z-index: 100;
+    }
+    .sidebar-header {
+      padding: 1.75rem 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .sidebar-brand { font-size: 1.5rem; font-weight: 800; color: #fff; letter-spacing: -0.03em; }
+    .badge-master {
+      background: rgba(139, 92, 246, 0.15); color: #a78bfa;
+      border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.25rem 0.6rem; border-radius: 99px;
+      font-size: 0.7rem; font-weight: 800; text-transform: uppercase; align-self: flex-start;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-menu { padding: 1.5rem 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto;}
+    .nav-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.85rem 1.1rem; border-radius: var(--radius-sm);
+      color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.95rem;
+      cursor: pointer; transition: var(--transition);
+      border: 1px solid transparent;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.03); color: #fff; border-color: rgba(255,255,255,0.05); }
+    .nav-item.active { 
+      background: linear-gradient(90deg, rgba(139, 92, 246, 0.1) 0%, transparent 100%);
+      color: var(--primary); 
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-left: 3px solid var(--primary); 
+      box-shadow: inset 2px 0 12px rgba(139, 92, 246, 0.05);
+    }
+    
+    .sidebar-footer { padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); }
+    .btn-logout {
+      width: 100%; display: block; text-align: center; padding: 0.85rem;
+      background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: var(--radius-sm); font-weight: 600; font-size: 0.9rem; cursor: pointer; text-decoration: none;
+      transition: var(--transition);
+    }
+    .btn-logout:hover { background: rgba(239, 68, 68, 0.15); box-shadow: 0 0 16px rgba(239, 68, 68, 0.2); }
+
+    .main-content {
+      flex: 1; padding: 2.5rem 3.5rem; overflow-y: auto; height: 100vh; position: relative;
+    }
+    
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .page-title h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.25rem; letter-spacing: -0.03em; }
+    .page-title p { color: var(--text-muted); font-size: 1rem; }
+
+    /* Cards & Grid */
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .stat-card {
+      background: var(--card-bg); border: 1px solid var(--border-color); border-top: 1px solid var(--border-highlight);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-radius: var(--radius-md); padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;
+      transition: var(--transition); box-shadow: var(--shadow-card);
+    }
+    .stat-card:hover { transform: translateY(-4px); border-color: var(--border-highlight); background: var(--card-hover); }
+    .stat-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-val { font-size: 2.5rem; font-weight: 800; color: #fff; line-height: 1; letter-spacing: -0.02em; }
+    .stat-trend { font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem; }
+    .trend-up { color: var(--accent); }
+    .trend-purple { color: var(--primary); }
+    .trend-amber { color: #f59e0b; }
+
+    /* Panels & Tables */
+    .glass-panel {
+      background: var(--card-bg); border: 1px solid var(--border-color); border-top: 1px solid var(--border-highlight);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow-card);
+    }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+    .panel-title h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+    .panel-title p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+    .input-search {
+      background: rgba(10,10,10,0.6); border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm); padding: 0.75rem 1rem; color: #fff; font-size: 0.9rem; width: 280px; outline: none; transition: var(--transition);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .input-search:focus { border-color: var(--primary); background: rgba(0,0,0,0.8); box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 0 0 3px var(--primary-glow); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: #fff; border: none; padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-sm); font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: var(--transition);
+      box-shadow: 0 0 24px -4px var(--primary-glow), inset 0 1px 1px rgba(255,255,255,0.2); text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 8px 24px -4px var(--primary-glow), inset 0 1px 1px rgba(255,255,255,0.3); }
+    
+    .btn-outline {
+      background: rgba(255,255,255,0.03); color: #e2e8f0; border: 1px solid var(--border-color); padding: 0.5rem 0.85rem;
+      border-radius: var(--radius-sm); font-weight: 600; font-size: 0.8rem; cursor: pointer; text-decoration: none; transition: var(--transition); display: inline-flex; align-items: center; gap: 0.3rem;
+      backdrop-filter: blur(12px);
+    }
+    .btn-outline:hover { background: rgba(255,255,255,0.08); border-color: var(--border-highlight); transform: translateY(-2px); }
+
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    th { padding: 1rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
+    td { padding: 1rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.04); color: #e2e8f0; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.03); }
+
+    /* Modais */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center;
+      z-index: 10000; opacity: 0; pointer-events: none; transition: var(--transition); padding: 1rem;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-box {
+      background: #0f1115; border: 1px solid var(--border-color); border-top: 1px solid var(--border-highlight); border-radius: var(--radius-lg);
+      width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; padding: 1.5rem;
+      transform: scale(0.9) translateY(20px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative;
+      box-shadow: var(--shadow-card);
+    }
+    .modal-overlay.active .modal-box { transform: scale(1) translateY(0); }
+    .btn-close-modal {
+      position: absolute; right: 1rem; top: 1rem; background: none; border: none;
+      color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: var(--transition);
+    }
+    .btn-close-modal:hover { color: #fff; transform: scale(1.1); }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">BioFidelidade</div>
+      <span class="badge-master">Administrador Central</span>
+    </div>
+    
+    <nav class="nav-menu">
+      <div class="nav-item active" onclick="switchTab('tab-overview', this)">
+        <span>📊</span> Visão Geral
+      </div>
+      <div class="nav-item" onclick="switchTab('tab-crm-global', this)">
+        <span>🗂️</span> CRM Global
+      </div>
+      <div class="nav-item" onclick="alert('Funcionalidade em desenvolvimento.');">
+        <span>💳</span> Faturamento (MRR)
+      </div>
+      <div class="nav-item" onclick="alert('Funcionalidade em desenvolvimento.');">
+        <span>⚙️</span> Configurações
+      </div>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <a href="login.html" class="btn-logout">Sair do Master</a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- OVERVIEW TAB -->
+    <section id="tab-overview">
+      <div class="header-top">
+        <div class="page-title">
+          <h1>Visão Geral da Plataforma</h1>
+          <p>Métricas globais de todas as empresas clientes do seu SaaS.</p>
+        </div>
+      </div>
+
+      <!-- METRICS GRID -->
+      <div class="metrics-grid">
+        <div class="stat-card">
+          <span class="stat-label">Empresas Ativas</span>
+          <div class="stat-val" id="metric-companies">0</div>
+          <span class="stat-trend trend-up">↑ Total Cadastradas</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Leads Capturados (Total)</span>
+          <div class="stat-val" id="metric-leads">0</div>
+          <span class="stat-trend trend-purple">↑ Banco de Dados Unificado</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Escaneamentos QR Code</span>
+          <div class="stat-val" id="metric-qrscans" style="color: #f59e0b;">0</div>
+          <span class="stat-trend trend-amber">📱 Validações Físicas em Balcão</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Receita Estimada (MRR)</span>
+          <div class="stat-val" id="metric-mrr" style="color: var(--accent);">R$ 0</div>
+          <span class="stat-trend trend-up">Base de R$ 149/mês</span>
+        </div>
+      </div>
+
+      <!-- COMPANIES TABLE -->
+      <div class="glass-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <h3>Gestão de Lojistas & Empresas</h3>
+            <p>Acesse o painel de qualquer cliente, ou teste os URLs públicos e de QR Code.</p>
+          </div>
+          <div style="display: flex; gap: 0.75rem;">
+            <input type="text" id="search-companies" class="input-search" placeholder="Pesquisar empresa ou slug..." oninput="filterCompaniesTable()">
+            <button class="btn-primary" onclick="openNewCompanyModal()">+ Nova Empresa</button>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Empresa & Nicho</th>
+              <th>Domínio SaaS</th>
+              <th>Performance</th>
+              <th>Plano</th>
+              <th style="text-align: right;">Ações de Controle</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-companies">
+            <!-- Preenchido via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+
+    <!-- GLOBAL CRM TAB -->
+    <section id="tab-crm-global" style="display: none;">
+      <div class="header-top">
+        <div class="page-title">
+          <h1>Auditoria & CRM Global</h1>
+          <p>Visão irrestrita de todos os clientes capturados em todos os lojistas da plataforma.</p>
+        </div>
+      </div>
+
+      <div class="glass-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <h3>Banco de Leads Unificado</h3>
+            <p>Selecione um cliente para auditar IP, localização e histórico de validação de sorteios.</p>
+          </div>
+          <input type="text" id="search-global-leads" class="input-search" placeholder="Buscar por Nome, Telefone ou Empresa..." oninput="filterGlobalLeads()">
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Lojista (Empresa)</th>
+              <th>Nome do Lead</th>
+              <th>WhatsApp</th>
+              <th>Origem / Captação</th>
+              <th style="text-align: right;">Auditoria Técnica</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-global-leads">
+            <!-- Preenchido via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL DE AUDITORIA GLOBAL -->
+  <div class="modal-overlay" id="modal-audit-master">
+    <div class="modal-box">
+      <button class="btn-close-modal" onclick="closeModal('modal-audit-master')">&times;</button>
+      
+      <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem;">
+        <div style="background: rgba(139,92,246,0.15); color: #a78bfa; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+          🛡️
+        </div>
+        <div>
+          <h3 style="font-weight: 800; font-size: 1.2rem; color: #fff;">Auditoria Global de Lead</h3>
+          <span style="font-size: 0.8rem; color: #a78bfa; font-weight: 600;">Modo Administrador Master</span>
+        </div>
+      </div>
+
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1.25rem; font-size: 0.9rem;">
+        <div style="margin-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.75rem;">
+          <span style="color: var(--text-muted); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.2rem;">Lojista Receptáculo</span>
+          <strong id="audit-master-tenant" style="color: #fff; font-size: 1.1rem;">-</strong>
+        </div>
+        
+        <div style="margin-bottom: 0.75rem;">
+          <span style="color: var(--text-muted); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.2rem;">Nome Completo</span>
+          <strong id="audit-master-name" style="color: #fff;">-</strong>
+        </div>
+
+        <div style="margin-bottom: 0.75rem;">
+          <span style="color: var(--text-muted); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.2rem;">Endereço de Rede (IP Público)</span>
+          <code id="audit-master-ip" style="background: #000; padding: 0.2rem 0.5rem; border-radius: 4px; color: #10b981; font-weight: 700;">-</code>
+        </div>
+        
+        <div style="margin-bottom: 0.75rem;">
+          <span style="color: var(--text-muted); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.2rem;">Localização Estimada / Cidade</span>
+          <strong id="audit-master-location" style="color: #fff;">-</strong>
+        </div>
+
+        <div style="margin-bottom: 0.75rem;">
+          <span style="color: var(--text-muted); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.2rem;">Data/Hora do Cadastro Original</span>
+          <strong id="audit-master-regdate" style="color: #fff;">-</strong>
+        </div>
+
+        <div style="margin-bottom: 0.75rem;">
+          <span style="color: var(--text-muted); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.2rem;">Último Check-in (QR Code)</span>
+          <strong id="audit-master-lastscan" style="color: #fff;">-</strong>
+        </div>
+        
+        <div>
+          <span style="color: var(--text-muted); display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.2rem;">Volume de Interações</span>
+          <strong id="audit-master-scancount" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 0.15rem 0.6rem; border-radius: 99px;">-</strong>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <script>
+    const defaultCompanies = [
+      { name: 'Med Farma', slug: 'medfarma', niche: 'Saúde, Farmácia & Bem-Estar' },
+      { name: 'Pizzaria Central', slug: 'pizzariacentral', niche: 'Alimentação, Gastronomia & Delivery' },
+      { name: 'Loja Marina Moda', slug: 'lojamarina', niche: 'Moda, Vestuário & Acessórios' },
+      { name: 'Barbearia Alfa', slug: 'barbeariax', niche: 'Estética, Beleza & Barbearia' }
+    ];
+
+    let allCompaniesList = [];
+    let globalLeadsList = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadMasterData();
+    });
+
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('section[id^="tab-"]').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).style.display = 'block';
+      if (btn) btn.classList.add('active');
+    }
+
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('active');
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('active');
+    }
+
+    function setUnique(arr) { return Array.from(new Set(arr)); }
+
+    function loadMasterData() {
+      const customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}');
+      const mergedSlugs = setUnique(['medfarma', 'pizzariacentral', 'lojamarina', 'barbeariax', ...Object.keys(customTenants)]);
+
+      let totalLeadsCount = 0;
+      let totalQrScansCount = 0;
+      globalLeadsList = [];
+
+      allCompaniesList = mergedSlugs.map(slug => {
+        const def = defaultCompanies.find(c => c.slug === slug) || {};
+        const custom = customTenants[slug] || {};
+        const name = custom.name || def.name || slug.toUpperCase();
+        const niche = custom.niche || def.niche || 'Geral';
+
+        let realLeads = [];
+        try { realLeads = JSON.parse(localStorage.getItem(`bf_leads_${slug}`) || '[]'); } catch(e) {}
+        
+        const leadsCount = realLeads.length;
+        totalLeadsCount += leadsCount;
+
+        const qrScans = realLeads.reduce((acc, curr) => acc + (curr.scanCount || (curr.source && curr.source.includes('QR') ? 1 : 0)), 0);
+        totalQrScansCount += qrScans;
+
+        // Populate global leads list for CRM tab
+        realLeads.forEach(lead => {
+          globalLeadsList.push({
+            tenantSlug: slug,
+            tenantName: name,
+            ...lead
+          });
+        });
+
+        return { name, slug, niche, leads: leadsCount, qrScans, plan: 'Pro (R$ 149)', status: 'Ativo' };
+      });
+
+      // Update Top Metrics
+      document.getElementById('metric-companies').textContent = allCompaniesList.length;
+      document.getElementById('metric-leads').textContent = totalLeadsCount;
+      document.getElementById('metric-qrscans').textContent = totalQrScansCount;
+      document.getElementById('metric-mrr').textContent = 'R$ ' + (allCompaniesList.length * 149).toLocaleString('pt-BR');
+
+      renderCompaniesTable(allCompaniesList);
+      
+      // Sort global leads by most recent scan or cáreation
+      globalLeadsList.sort((a, b) => {
+        if (!a.date && !b.date) return 0;
+        if (!a.date) return 1;
+        if (!b.date) return -1;
+        return -1; 
+      });
+      renderGlobalLeadsTable(globalLeadsList);
+    }
+
+    function renderCompaniesTable(list) {
+      const tbody = document.getElementById('tbody-companies');
+      if (!tbody) return;
+
+      tbody.innerHTML = list.map(c => `
+        <tr>
+          <td>
+            <strong style="color: #fff;">${c.name}</strong><br>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">${c.niche}</span>
+          </td>
+          <td>
+            <a href="../index.html?tenant=${c.slug}" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 600;">/${c.slug} ↗</a>
+          </td>
+          <td>
+            <strong style="color: #fff;">${c.leads} Leads</strong>
+            ${c.qrScans > 0 ? `<br><span style="font-size: 0.72rem; color: #f59e0b;">📱 ${c.qrScans} QR Scans</span>` : ''}
+          </td>
+          <td>
+            <span style="color: #a78bfa; font-weight: 700;">${c.plan}</span><br>
+            <span style="color: var(--accent); font-size: 0.7rem;">● ${c.status}</span>
+          </td>
+          <td style="text-align: right;">
+            <div style="display: flex; gap: 0.4rem; justify-content: flex-end;">
+              <a href="../index.html?tenant=${c.slug}&src=qrcode" target="_blank" class="btn-outline" style="color: #f59e0b; border-color: rgba(245,158,11,0.4);" title="Testar QR Code Físico">
+                📱 QR Teste
+              </a>
+              <a href="empresa.html?tenant=${c.slug}&master=true" class="btn-outline" style="color: #a78bfa; border-color: rgba(167,139,250,0.4);">
+                🔑 Painel
+              </a>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderGlobalLeadsTable(list) {
+      const tbody = document.getElementById('tbody-global-leads');
+      if (!tbody) return;
+
+      tbody.innerHTML = list.map((lead, i) => `
+        <tr>
+          <td>
+            <span style="background: rgba(255,255,255,0.05); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; border: 1px solid var(--border-color);">
+              ${lead.tenantName}
+            </span>
+          </td>
+          <td><strong style="color: #fff;">${lead.name || 'Desconhecido'}</strong></td>
+          <td>${lead.whatsapp || 'N/A'}</td>
+          <td>
+            <span style="font-size: 0.8rem; color: ${lead.isValidated ? '#10b981' : 'var(--text-muted)'};">
+              ${lead.isValidated ? '✅ QR Validado' : (lead.source || 'Bio Link')}
+            </span>
+          </td>
+          <td style="text-align: right;">
+            <button class="btn-outline" onclick="openMasterAudit(${i})" style="color: #38bdf8; border-color: rgba(56,189,248,0.4);">
+              🔍 Auditoria
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openMasterAudit(index) {
+      const lead = globalLeadsList[index];
+      if (!lead) return;
+
+      document.getElementById('audit-master-tenant').textContent = `${lead.tenantName} (/${lead.tenantSlug})`;
+      document.getElementById('audit-master-name').textContent = lead.name || 'Desconhecido';
+      document.getElementById('audit-master-ip').textContent = lead.ip || 'Não Registrado (Cadastro Antigo)';
+      document.getElementById('audit-master-location').textContent = lead.location || (lead.bairro ? `${lead.bairro} (Local)` : 'Não Registrado');
+      document.getElementById('audit-master-regdate').textContent = lead.date || 'Recente';
+      document.getElementById('audit-master-lastscan').textContent = lead.lastScanDate || lead.date || 'Não escaneou QR';
+      document.getElementById('audit-master-scancount').textContent = `${lead.scanCount || 1} Escaneamento(s)`;
+
+      openModal('modal-audit-master');
+    }
+
+    function filterCompaniesTable() {
+      const q = document.getElementById('search-companies').value.toLowerCase().trim();
+      const filtered = allCompaniesList.filter(c => c.name.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q));
+      renderCompaniesTable(filtered);
+    }
+
+    function filterGlobalLeads() {
+      const q = document.getElementById('search-global-leads').value.toLowerCase().trim();
+      const filtered = globalLeadsList.filter(l => 
+        (l.name && l.name.toLowerCase().includes(q)) || 
+        (l.whatsapp && l.whatsapp.includes(q)) ||
+        (l.tenantName && l.tenantName.toLowerCase().includes(q))
+      );
+      renderGlobalLeadsTable(filtered);
+    }
+
+    function openNewCompanyModal() {
+      const name = prompt("Nome da Nova Empresa Cliente:");
+      if (name) {
+        const slug = prompt("Slug único da empresa (ex: minhaloja):", name.toLowerCase().replace(/[^a-z0-9]/g, ''));
+        if (slug) {
+          const newCompany = {
+            id: 'comp-' + Date.now(),
+            name: name,
+            slug: slug,
+            niche: 'Geral',
+            primaryColor: '#10b981',
+            whatsapp: '',
+            address: '',
+            isOpen: true
+          };
+          const customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}');
+          customTenants[slug] = newCompany;
+          localStorage.setItem('bf_custom_tenants', JSON.stringify(customTenants));
+          alert(`Empresa "${name}" cadastrada!`);
+          loadMasterData();
+        }
+      }
+    }
+  </script>
+</body>
+</html>
