@@ -63,8 +63,17 @@
     }
     .tab-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
     .tab-btn.active { background: var(--tenant-primary); color: #fff; box-shadow: 0 4px 12px var(--tenant-glow); }
-    .tab-content { display: none !important; }
-    .tab-content.active { display: block !important; }
+    .tab-content {
+      display: none;
+      animation: fadeInTab 0.25s ease forwards;
+    }
+    .tab-content.active {
+      display: block !important;
+    }
+    @keyframes fadeInTab {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
     .highlight-edit-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border-color);
@@ -370,7 +379,7 @@
   <!-- MAIN CONTENT -->
   <main class="main-content">
 
-    <div id="tab-visao-geral" class="tab-content">
+    <div id="tab-visao-geral" class="tab-content active" style="display: block;">
       <div class="grid-dashboard" style="margin-bottom: 1.5rem;">
         <div class="glass-card">
           <span style="font-size: 0.85rem; color: var(--text-muted);">Visualizações no Link da Bio</span>
@@ -1170,17 +1179,29 @@
       loadCompanyLeads();
       renderTrafficOriginAnalytics();
       updateGeneratedLinkPreview();
+      showTab('tab-visao-geral');
     });
 
     function showTab(tabId, btn) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      // Remove old tab buttons (if they still exist)
+      document.querySelectorAll('.tab-content').forEach(el => {
+        el.classList.remove('active');
+        el.style.display = 'none';
+      });
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-      // Remove sidebar nav items
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
-      document.getElementById(tabId).classList.add('active');
-      if (btn) btn.classList.add('active');
+      const target = document.getElementById(tabId);
+      if (target) {
+        target.classList.add('active');
+        target.style.display = 'block';
+      }
+
+      if (btn) {
+        btn.classList.add('active');
+      } else {
+        const autoBtn = document.querySelector(`.nav-item[onclick*="${tabId}"]`);
+        if (autoBtn) autoBtn.classList.add('active');
+      }
     }
 
     function openModal(modalId) {
