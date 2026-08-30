@@ -1980,9 +1980,9 @@
           <div class="instructions">📱 Aponte a câmera do seu celular para o QR Code</div>
           <div class="sub-instructions">Validação rápida de cupons & participação no sorteio presencial</div>
           <div class="footer">BioFidelidade • Sistema de Validação Presencial</div>
-          <scr` + `ipt>
+          <script>
             window.onload = function() { window.print(); };
-          </scr` + `ipt>
+          <\/script>
         </body>
         </html>
       `);
@@ -1990,26 +1990,26 @@
     }
 
     async function downloadQrCodeImage() {
-        try {
-          const targetUrl = document.getElementById('qr-encoded-url') ? document.getElementById('qr-encoded-url').value : window.location.href;
-          const qrSrc = https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=;
-          
-          const response = await fetch(qrSrc);
-          const blob = await response.blob();
-          const blobUrl = URL.createObjectURL(blob);
-          
-          const a = document.createElement('a');
-          a.href = blobUrl;
-          a.download = qrcode_.png;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(blobUrl);
-        } catch (error) {
-          console.error('Erro ao baixar QR code:', error);
-          alert('Não foi possível baixar o QR Code diretamente. Clique com o botão direito na imagem gerada e selecione Salvar.');
-        }
+      try {
+        const targetUrl = document.getElementById('qr-encoded-url') ? document.getElementById('qr-encoded-url').value : window.location.href;
+        const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(targetUrl)}`;
+
+        const response = await fetch(qrSrc);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = `qrcode_${activeSlug || 'biofidelidade'}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      } catch (error) {
+        console.error('Erro ao baixar QR code:', error);
+        alert('Não foi possível baixar o QR Code diretamente. Clique com o botão direito na imagem gerada e selecione Salvar.');
       }
+    }
     }
 
     function clearAllLeads() {
