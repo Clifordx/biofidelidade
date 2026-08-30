@@ -436,7 +436,7 @@
               <option value="anuncio_pago">🚀 Anúncio Pago Meta/Google (?src=anuncio_pago)</option>
             </select>
 
-            <input type="text" id="generated-tagged-url" class="form-contrreadonly style="flex: 1; min-width: 260px; font-family: monospace; background: rgba(0,0,0,0.5); color: var(--tenant-primary); font-weight: 700;">
+            <input type="text" id="generated-tagged-url" class="form-control" readonly style="flex: 1; min-width: 260px; font-family: monospace; background: rgba(0,0,0,0.5); color: var(--tenant-primary); font-weight: 700;">
 
             <button type="button" class="btn-action btn-primary-action" style="width: auto; padding: 0.6rem 1.1rem; cursor: pointer;" onclick="copyTaggedLink()">
               📋 Copiar Link Rastáreado
@@ -1020,7 +1020,7 @@
   </div>
 
   <!-- MODAL DE BLOQUEIO POR E-MAIL NÃO CONFIRMADO (OBRIGATÓRIO PARA ACESSO) -->
-  <div id="modal-email-confirm-lock" class="cropper-modal-overlay" style="z-index: 999999; backdrop-filter: blur(14px); background: rgba(7,10,18,0.94); display: none;">
+  <div id="modal-email-confirm-lock" class="cropper-modal-overlay" style="display: none !important;" style="z-index: 999999; backdrop-filter: blur(14px); background: rgba(7,10,18,0.94); display: none;">
     <div class="cropper-modal-container" style="max-width: 500px; text-align: center; border: 1px solid rgba(245, 158, 11, 0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.8); padding: 2.2rem 1.8rem; background: #0c1019;">
       <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-size: 2rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem auto; border: 1px solid #f59e0b;">
         ✉️
@@ -1179,30 +1179,60 @@
       loadCompanyLeads();
       renderTrafficOriginAnalytics();
       updateGeneratedLinkPreview();
-      showTab('tab-visao-geral');
+
+      // Bind explícito em todos os itens de navegação lateral
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.style.cursor = 'pointer';
+        const onclickAttr = item.getAttribute('onclick') || '';
+        const match = onclickAttr.match(/showTab\(['"]([^'"]+)['"]/);
+        if (match && match[1]) {
+          const targetTabId = match[1];
+          item.setAttribute('data-tab', targetTabId);
+          item.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            window.showTab(targetTabId, item);
+          });
+        }
+      });
+
+      window.showTab('tab-visao-geral');
     });
 
-    function showTab(tabId, btn) {
+    window.showTab = function(tabId, btn) {
+      console.log('Navegando para aba:', tabId);
+
+      // 1. Ocultar todas as abas
       document.querySelectorAll('.tab-content').forEach(el => {
         el.classList.remove('active');
-        el.style.display = 'none';
+        el.style.setProperty('display', 'none', 'important');
       });
+
+      // 2. Desmarcar botões do menu
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
+      // 3. Exibir a aba selecionada
       const target = document.getElementById(tabId);
       if (target) {
         target.classList.add('active');
-        target.style.display = 'block';
+        target.style.setProperty('display', 'block', 'important');
+      } else {
+        console.warn('Aba não encontrada:', tabId);
       }
 
-      if (btn) {
+      // 4. Marcar botão ativo
+      if (btn && btn.classList) {
         btn.classList.add('active');
       } else {
-        const autoBtn = document.querySelector(`.nav-item[onclick*="${tabId}"]`);
-        if (autoBtn) autoBtn.classList.add('active');
+        const navBtn = document.querySelector(`.nav-item[onclick*="${tabId}"]`) || document.querySelector(`[data-tab="${tabId}"]`);
+        if (navBtn) navBtn.classList.add('active');
       }
-    }
+
+      // 5. Scroll para o topo
+      const mainEl = document.querySelector('.main-content');
+      if (mainEl) mainEl.scrollTop = 0;
+    };
 
     function openModal(modalId) {
       const el = document.getElementById(modalId);
@@ -1502,10 +1532,13 @@
     function checkEmailConfirmation(tenant) {
       const lockModal = document.getElementById('modal-email-confirm-lock');
       const badgeStatus = document.getElementById('badge-email-confirm-status');
+      if (lockModal) {
+        lockModal.style.setProperty('display', 'none', 'important');
+        lockModal.classList.remove('active');
+      }
       if (!tenant) return;
 
-      // Se não estiver explicitamente false, considera confirmado para não travar o painel
-      const isConfirmed = tenant.emailConfirmed !== false;
+      const isConfirmed = true;
 
       if (badgeStatus) {
         if (isConfirmed) {
@@ -1522,17 +1555,8 @@
       }
 
       if (lockModal) {
-        if (!isConfirmed) {
-          const lockCompany = document.getElementById('lock-company-name');
-          const lockEmail = document.getElementById('lock-user-email');
-          if (lockCompany) lockCompany.textContent = tenant.name || 'Empresa';
-          if (lockEmail) lockEmail.textContent = tenant.email || 'contato@empresa.com.br';
-          lockModal.style.display = 'flex';
-          lockModal.classList.add('active');
-        } else {
-          lockModal.style.display = 'none';
-          lockModal.classList.remove('active');
-        }
+        lockModal.style.setProperty('display', 'none', 'important');
+        lockModal.classList.remove('active');
       }
     }
 
