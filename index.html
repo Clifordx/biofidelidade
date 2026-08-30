@@ -3,232 +3,932 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BioFidelidade | Central de Relacionamento & Link da Bio</title>
-  <meta name="description" content="Plataforma de cupons, localização e conversão no link da bio do Instagram.">
+  <title>Central de Ofertas | BioFidelidade</title>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- Supabase JS CDN (defer para carregamento instantâneo sem bloqueio) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      background: #050505;
+      background-image: 
+        radial-gradient(circle at top right, rgba(139, 92, 246, 0.1), transparent 50%),
+        radial-gradient(circle at bottom left, rgba(16, 185, 137, 0.05), transparent 50%);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      color: #f8fafc;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3, h4, .promo-headline, .location-info-title {
+      font-family: 'Outfit', sans-serif;
+    }
+    .bio-wrapper {
+      width: 100%;
+      max-width: 450px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 3.5rem 1rem;
+    }
+    .profile-header {
+      text-align: center;
+      margin-bottom: 1.25rem;
+    }
+    .profile-banner-container {
+      width: 100%;
+      height: 160px;
+      border-radius: 24px;
+      overflow: hidden;
+      margin-bottom: -56px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+      position: relative;
+    }
+    .profile-banner-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .profile-avatar-circle {
+      width: 104px;
+      height: 104px;
+      border-radius: 50%;
+      background: #0a0a0a;
+      border: 4px solid var(--tenant-primary);
+      margin: 0 auto 0.75rem auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 24px var(--tenant-glow), 0 8px 32px rgba(0,0,0,0.6);
+      position: relative;
+      z-index: 2;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .profile-avatar-circle:hover {
+      transform: scale(1.08) rotate(3deg);
+      box-shadow: 0 0 32px var(--tenant-glow), 0 12px 40px rgba(0,0,0,0.8);
+    }
+    .profile-avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1.1rem;
+      border-radius: 99px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      margin-top: 0.5rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+    .status-pill.open {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15);
+    }
+    .status-pill.closed {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.15);
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+      animation: pulseDot 2s infinite;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 8px 32px -4px var(--tenant-glow), inset 0 1px 1px rgba(255,255,255,0.3); }
+      50% { box-shadow: 0 8px 48px 4px var(--tenant-glow), inset 0 1px 1px rgba(255,255,255,0.3); transform: scale(1.01); }
+      100% { box-shadow: 0 8px 32px -4px var(--tenant-glow), inset 0 1px 1px rgba(255,255,255,0.3); }
+    }
+    .btn-main-cta {
+      width: 100%;
+      padding: 1.15rem 1.5rem;
+      font-size: 1.05rem;
+      font-weight: 800;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--tenant-primary) 0%, var(--tenant-primary) 100%);
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: 0 8px 32px -4px var(--tenant-glow), inset 0 1px 1px rgba(255,255,255,0.3);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.7rem;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.02em;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      animation: pulseGlow 3s infinite cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .btn-main-cta:hover {
+      filter: brightness(1.1);
+      animation: none;
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px -4px var(--tenant-glow), inset 0 1px 1px rgba(255,255,255,0.4);
+    }
+    
+    .promo-banner-card {
+      background: rgba(25, 25, 25, 0.5);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-top: 1px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+    .promo-badge-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--tenant-primary);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--tenant-primary);
+      padding: 0.35rem 0.8rem;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.75rem;
+    }
+    .promo-headline {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+    }
+    .promo-subtext {
+      font-size: 0.9rem;
+      color: #a1a1aa;
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
+    .promo-coupon-pill {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px dashed var(--tenant-primary);
+      color: var(--tenant-primary);
+      font-weight: 800;
+      padding: 0.3rem 0.75rem;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .highlight-card-row {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      cursor: grab;
+      padding: 1.5rem 1rem; /* Adicionado padding para evitar corte da sombra */
+      margin: -1.5rem -1rem 0.5rem -1rem; /* Margem negativa para compensar o padding no layout */
+    }
+    .highlight-card-row:active {
+      cursor: grabbing;
+    }
+    .highlight-card-row::-webkit-scrollbar { 
+      height: 4px; 
+    }
+    .highlight-card-row::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.2);
+      border-radius: 4px;
+    }
+    .highlight-card-row::-webkit-scrollbar-thumb { 
+      background: rgba(255,255,255,0.2); 
+      border-radius: 4px; 
+    }
+
+    .highlight-card {
+      min-width: 160px;
+      max-width: 160px;
+      background: rgba(25, 25, 25, 0.5);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-top: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+      overflow: hidden;
+      scroll-snap-align: start;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.5);
+    }
+    .highlight-card:hover {
+      border-color: var(--tenant-primary);
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px -8px rgba(0,0,0,0.7), 0 0 16px var(--tenant-glow);
+    }
+    .highlight-img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+    }
+    .highlight-body {
+      padding: 0.85rem;
+    }
+    .highlight-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.35rem;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .highlight-price {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--tenant-primary);
+    }
+    
+    .payment-pill {
+      background: rgba(25, 25, 25, 0.5);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 0.5rem 0.9rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      color: #f1f5f9;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(12px);
+    }
+    .payment-pill:hover {
+      border-color: var(--tenant-primary);
+      background: rgba(255,255,255,0.05);
+      transform: translateY(-2px);
+    }
+    .payment-svg-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    /* CARD DE MAPA & LOCALIZAÇÃO CORPORATIVO */
+    .location-box-card {
+      background: rgba(25, 25, 25, 0.5);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-top: 1px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.5);
+    }
+    .map-embed-container {
+      width: 100%;
+      height: 180px;
+      position: relative;
+      background: #000;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .map-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      filter: grayscale(0.7) invert(0.9) contrast(1.2) hue-rotate(180deg);
+      opacity: 0.9;
+    }
+    .location-card-body {
+      padding: 1.5rem;
+      text-align: left;
+    }
+    .location-info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .location-info-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--tenant-primary);
+      flex-shrink: 0;
+    }
+    .location-info-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.3;
+    }
+    .location-info-sub {
+      font-size: 0.85rem;
+      color: #a1a1aa;
+      margin-top: 0.2rem;
+    }
+    .map-action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+    
+    .testimonial-rotator-card {
+      background: rgba(25, 25, 25, 0.5);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-top: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.5);
+    }
+    .testimonial-text {
+      font-size: 0.9rem;
+      color: #e2e8f0;
+      font-style: italic;
+      line-height: 1.5;
+      transition: opacity 0.4s ease;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .form-row-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem;
+    }
+    @media (max-width: 380px) {
+      .form-row-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .form-control.is-invalid {
+      border-color: #ef4444 !important;
+      background: rgba(239, 68, 68, 0.08) !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+    }
+    .field-error-msg {
+      color: #f87171;
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin-top: 0.35rem;
+      display: none;
+      align-items: flex-start;
+      gap: 0.3rem;
+      line-height: 1.3;
+    }
+    .field-error-msg.active {
+      display: flex;
+    }
+
+    .success-step-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 0.75rem;
+      text-align: left;
+    }
+    .step-number-badge {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--tenant-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+      display: block;
+    }
+
+    /* Premium Form Spinners & Glass Hover Enhancements */
+    .btn-action {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      overflow: hidden;
+    }
+    .btn-action:hover {
+      transform: translateY(-3px);
+      filter: brightness(1.1);
+    }
+    .btn-action:active {
+      transform: translateY(0);
+    }
+    .btn-primary-action.loading, .btn-secondary-action.loading, .btn-main-cta.loading {
+      pointer-events: none;
+      opacity: 0.85;
+    }
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+    .loading .spinner { display: inline-block; }
+    .loading .btn-text-content { display: none; }
+    
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
 
-  <!-- Multi-Tenant Switcher Bar -->
-  <div class="tenant-switcher-bar">
-    <span>🌐 <strong>BioFidelidade SaaS</strong> (Link da Bio)</span>
-    <div>
-      <label for="tenant-select" style="font-size: 0.78rem;">Empresa:</label>
-      <select id="tenant-select" class="tenant-switcher-select" onchange="switchTenant(this.value)">
-        <option value="pizzariacentral" selected>🍕 Pizzaria Central</option>
-        <option value="lojamarina">👗 Loja Marina Moda</option>
-        <option value="barbeariax">💈 Barbearia Alfa</option>
-      </select>
-    </div>
+  <!-- Switcher Bar para Demonstração de Tenants -->
+  <div class="demo-bar">
+    <span>Empresa Demonstrativa:</span>
+    <select id="tenant-select" onchange="switchTenant(this.value)" class="tenant-switcher-select">
+      <!-- Opções preenchidas via app.js -->
+    </select>
   </div>
 
-  <!-- Mobile Wrapper Container -->
-  <div class="mobile-wrapper">
+  <div class="bio-wrapper">
 
-    <!-- Customer Session Wallet Badge -->
-    <div id="customer-wallet-badge" style="display: none;">
-      <!-- Populated dynamically by JS -->
-    </div>
+    <!-- Header do Perfil -->
+    <div class="profile-header">
+      <div class="profile-banner-container">
+        <img id="tenant-banner-img" src="https://images.unsplash.com/photo-1576602976047-174e57a47881?w=800" class="profile-banner-img" alt="Capa">
+      </div>
 
-    <!-- Profile Header Card -->
-    <div class="glass-card profile-header">
-      <img id="tenant-banner-img" class="tenant-banner" src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800" alt="Banner Empresa">
-      <div id="tenant-logo" class="tenant-avatar">🍕</div>
-      
-      <h1 id="tenant-name" class="tenant-name">Pizzaria Central</h1>
-      <p id="tenant-bio" class="tenant-bio">Pizza artesanal feita para você ❤️</p>
+      <div class="profile-avatar-circle">
+        <img id="tenant-avatar-img" src="https://images.unsplash.com/photo-1576602976047-174e57a47881?w=200" class="profile-avatar-img" alt="Avatar">
+      </div>
 
-      <!-- Status Pill -->
+      <h1 id="tenant-name" style="font-size: 1.45rem; font-weight: 800; color: #fff; letter-spacing: -0.02em;">Med Farma</h1>
+      <p id="tenant-bio" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+        Saúde, Farmácia & Bem-Estar
+      </p>
+
       <div id="tenant-status-pill" class="status-pill open">
-        <span class="status-dot"></span> <span>🟢 Estamos Abertos Agora!</span>
+        <span class="status-dot"></span> Aberto agora • Atendimento rápido
       </div>
-
-      <!-- Main WhatsApp Action Button -->
-      <button id="btn-main-whatsapp" class="btn-action btn-primary-action" onclick="handleMainWhatsappClick()">
-        💬 FAZER PEDIDO NO WHATSAPP
-      </button>
     </div>
 
-    <!-- Active Campaign / Coupon Banner Card -->
-    <div class="glass-card" style="border-color: var(--tenant-primary);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-        <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: var(--tenant-primary);">
-          OFERTA ESPECIAL
-        </span>
-        <span style="font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 0.15rem 0.5rem; border-radius: 4px;" id="coupon-code-display">
-          PIZZA10
-        </span>
-      </div>
-      <h3 id="campaign-title" style="font-size: 1.15rem; font-weight: 800; margin-bottom: 0.4rem;">
-        🎁 10% OFF no 1º Pedido
+    <!-- Badge da Sessão do Cliente -->
+    <div id="customer-wallet-badge" style="display: none;"></div>
+
+    <!-- 1º OPÇÃO: CTA PRINCIPAL NO WHATSAPP COM ÍCONE SVG -->
+    <button id="btn-main-whatsapp" class="btn-main-cta" onclick="handleMainWhatsappClick()">
+      <span class="btn-text-content" style="display: flex; align-items: center; gap: 0.6rem;">
+        <svg class="payment-svg-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-1.14 4.162 4.183-1.095z"/></svg>
+        Fazer Pedido pelo WhatsApp
+      </span>
+      <div class="spinner"></div>
+    </button>
+
+    <!-- 2º OPÇÃO: CARD DE OFERTA EXCLUSIVA + GRUPO VIP -->
+    <div class="promo-banner-card">
+      <span class="promo-badge-tag">OFERTA DE BOAS-VINDAS & VIP</span>
+      <h3 id="campaign-title" class="promo-headline">
+        Ganhe 10% OFF na 1 compra + Acesso ao Grupo VIP
       </h3>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
-        Cadastre-se com seu endereço para resgatar o desconto e participar do nosso Clube VIP!
+      <p class="promo-subtext">
+        Cadastre-se para ativar o cupom <span id="coupon-code-display" class="promo-coupon-pill">MED10</span> e liberar ofertas exclusivas no WhatsApp.
       </p>
+
       <button class="btn-action btn-primary-action" onclick="openModal('modal-cadastrar')">
-        🎁 PEGAR MEU DESCONTO AGORA
+        Resgatar Cupom de Desconto
       </button>
     </div>
 
-    <!-- NOVO 1: Destaques Rápidos / Mais Vendidos (Carrossel Fotos) -->
-    <div class="glass-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-        <h3 style="font-size: 0.95rem; font-weight: 800; color: #fff;">🔥 Mais Vendidos / Destaques</h3>
-        <span style="font-size: 0.75rem; color: var(--tenant-primary);">Clique para pedir no Whats</span>
+    <div style="margin-bottom: 1.25rem; position: relative;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+        <span style="font-size: 0.82rem; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.03em;">🔥 Ofertas Exclusivas da Semana</span>
+        <span style="font-size: 0.72rem; color: #10b981; font-weight: 700;">Toque para Ativar Oferta 🏷️</span>
       </div>
-      <div id="highlights-container" class="highlights-container">
-        <!-- Dynamically rendered by JS -->
+      <div id="highlights-container" class="highlight-card-row">
+        <!-- Preenchido via app.js -->
       </div>
     </div>
 
-    <!-- Destaque: Localização Completa & Como Chegar -->
-    <div class="glass-card">
-      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-        <span style="font-size: 1.4rem;">📍</span>
-        <div>
-          <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff;">Nossa Localização</h3>
-          <span style="font-size: 0.78rem; color: var(--text-muted);">Venha nos visitar ou peça entrega na sua região</span>
+    <!-- 4º OPÇÃO: AVALIAÇÕES VERIFICADAS (ALTERAÇÃO AUTOMÁTICA FLUIDA) -->
+    <div class="testimonial-rotator-card" style="padding: 1.1rem 1.25rem; margin-bottom: 1.25rem; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); backdrop-filter: blur(10px);">
+      <div id="tenant-rating" style="font-size: 0.82rem; font-weight: 800; color: #f59e0b; margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.35rem;">
+        5.0 ★★★★★ • Avaliações Verificadas
+      </div>
+
+      <div style="min-height: 48px; display: flex; align-items: center; gap: 0.8rem; text-align: left;">
+        <div style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--tenant-primary)"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+        </div>
+        <div id="tenant-testimonial" class="testimonial-text" style="transition: opacity 0.4s ease, transform 0.4s ease; width: 100%; font-size: 0.88rem; color: #f8fafc; font-style: italic; line-height: 1.45; justify-content: flex-start;">
+          "Atendimento excelente no WhatsApp e entrega super rápida! - Maria S."
         </div>
       </div>
+      <div id="testimonial-dots-container" style="display: flex; justify-content: center; gap: 5px; margin-top: 0.5rem;"></div>
+    </div>
 
-      <!-- Card do Endereço Detalhado -->
-      <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
-        <div style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem;" id="tenant-address">
-          Rua das Flores, 123 - Centro
+    <!-- 5º OPÇÃO: FORMAS DE PAGAMENTO ACEITAS -->
+    <div style="margin-bottom: 1.25rem; text-align: center;">
+      <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+        Formas de Pagamento Aceitas
+      </div>
+      <div id="payments-pills-container" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem;">
+        <!-- Preenchido via app.js -->
+      </div>
+    </div>
+
+    <!-- 6º OPÇÃO: LOCALIZAÇÃO E HORÁRIOS -->
+    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.1rem; margin-bottom: 1.5rem; backdrop-filter: blur(10px);">
+      <div style="font-size: 0.85rem; font-weight: 800; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+        📍 Localização & Atendimento
+      </div>
+
+      <div style="width: 100%; height: 165px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-color); margin-bottom: 0.85rem; background: #000; position: relative;">
+        <iframe id="tenant-map-iframe" style="width: 100%; height: 100%; border: none; filter: grayscale(0.5) invert(0.8) contrast(1.1) hue-rotate(180deg); opacity: 0.85;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+
+      <div class="location-info-box">
+        <div class="location-info-item">
+          <div class="location-info-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          </div>
+          <div>
+            <div id="tenant-address" class="location-info-title">Av. Brasil, 450 - Centro</div>
+            <div class="location-info-sub">Próximo à Praça Central • Estacionamento Gratuito</div>
+          </div>
         </div>
-        <p style="font-size: 0.82rem; color: var(--text-muted);">
-          📍 Ponto de Referência: Próximo à Praça Central<br>
-          🕒 Horário: <strong style="color: var(--text-main);" id="tenant-hours">18:00 às 23:30</strong>
-        </p>
-      </div>
 
-      <!-- Botões de Ação para Navegação / GPS -->
-      <div style="display: flex; flex-direction: column; gap: 0.6rem;">
-        <button class="btn-action btn-primary-action" onclick="openMapsNavigation('google')">
-          📍 ABRIR NO GOOGLE MAPS
+        <div class="location-info-item" style="margin-bottom: 0;">
+          <div class="location-info-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </div>
+          <div>
+            <div id="tenant-hours" class="location-info-title">Horário Hoje: Seg-Sex 08:00 s 22:00</div>
+            <div id="tenant-hours-breakdown" class="location-info-sub" style="color: #34d399; font-size: 0.76rem; line-height: 1.45; margin-top: 0.25rem;">
+              📅 Seg-Sex: <strong>08:00 s 22:00</strong> &bull; Sáb: <strong>08:00 s 18:00</strong> &bull; Dom: <strong>Fechado</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="map-action-grid">
+          <button class="btn-action btn-secondary-action" style="padding: 0.65rem 0.5rem; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem;" onclick="openMapsNavigation('google')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            Google Maps
+          </button>
+          <button class="btn-action btn-secondary-action" style="padding: 0.65rem 0.5rem; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem;" onclick="openMapsNavigation('waze')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+            Waze GPS
+          </button>
+        </div>
+
+        <button class="btn-action btn-secondary-action" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; font-size: 0.78rem; text-transform: uppercase;" onclick="copyAddressToClipboard()">
+          📋 Copiar Endereço Completo
         </button>
-        <button class="btn-action btn-secondary-action" onclick="openMapsNavigation('waze')">
-          🚗 ABRIR NO WAZE
-        </button>
       </div>
     </div>
 
-    <!-- NOVO 2: Prova Social / Avaliações de Clientes -->
-    <div class="glass-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-        <span style="font-size: 0.85rem; font-weight: 700; color: #fff;">⭐ O que dizem os clientes</span>
-        <span class="review-rating-badge" id="tenant-rating">4.9 ★★★★★</span>
-      </div>
-      <blockquote style="font-size: 0.82rem; color: var(--text-muted); font-style: italic; border-left: 2px solid var(--tenant-primary); padding-left: 0.75rem; margin: 0.4rem 0;" id="tenant-testimonial">
-        "A melhor pizza da cidade! Chegou super quente em 25 minutos. ⭐⭐⭐⭐⭐ - Ana S."
-      </blockquote>
-    </div>
-
-    <!-- NOVO 3: Formas de Pagamento Aceitas -->
-    <div class="glass-card" style="padding: 1rem;">
-      <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted);">💳 Formas de Pagamento Aceitas:</span>
-      <div id="payments-container" class="payment-pills-grid">
-        <!-- Rendered by JS -->
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div style="text-align: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
-      <p style="font-size: 0.75rem; color: var(--text-dim);">
-        Plataforma por <strong style="color: var(--text-muted);">BioFidelidade.com.br</strong><br>
-        Tecnologia para Conversão no Link da Bio
-      </p>
-      <div style="margin-top: 0.5rem;">
-        <a href="admin/empresa.html" style="font-size: 0.75rem; color: var(--tenant-primary);">Painel da Empresa</a> • 
-        <a href="admin/master.html" style="font-size: 0.75rem; color: var(--text-muted);">Painel Master</a>
-      </div>
+    <div style="text-align: center; font-size: 0.75rem; color: var(--text-muted);">
+      Powered by <strong>BioFidelidade SaaS</strong>
     </div>
 
   </div>
 
-  <!-- Modal Lead Capture & Auto Registration -->
+  <!-- MODAL DE CADASTRO DE LEAD -->
   <div class="modal-overlay" id="modal-cadastrar">
     <div class="modal-box">
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+        <button onclick="closeModal('modal-cadastrar')" title="Voltar" aria-label="Voltar para a página anterior" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 50%; width: 30px; height: 30px; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+          ←
+        </button>
+        <h3 id="modal-cadastrar-title" style="font-size: 0.95rem; color: #fff; margin: 0; font-weight: 800; flex: 1;">Resgatar Cupom de Desconto</h3>
+        <button onclick="closeModal('modal-cadastrar')" style="background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">&times;</button>
+      </div>
 
-      <!-- STEP 1: Full Form -->
-      <div id="modal-lead-form-step">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-          <h3 style="font-size: 1.15rem;">🎁 Cadastro no Clube & Desconto</h3>
-          <button onclick="closeModal('modal-cadastrar')" style="background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">&times;</button>
+      <!-- CARD DE PREVIEW DA OFERTA DA SEMANA SELECIONADA (DINÂMICO) -->
+      <div id="modal-offer-preview-box" style="display: none; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 0.75rem 0.9rem; margin-bottom: 1rem; align-items: center; gap: 0.75rem;">
+        <img id="offer-preview-img" src="" style="width: 46px; height: 46px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.15);" alt="Oferta">
+        <div>
+          <div style="font-size: 0.72rem; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.04em;">🔥 Oferta da Semana Selecionada</div>
+          <div id="offer-preview-name" style="font-size: 0.88rem; font-weight: 800; color: #fff;">Nome da Oferta</div>
+          <div id="offer-preview-price" style="font-size: 0.78rem; font-weight: 700; color: #34d399;">R$ 0,00</div>
         </div>
-        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
-          Preencha seus dados para receber o cupom e agilizar seus futuros pedidos:
-        </p>
+      </div>
 
-        <form onsubmit="handleLeadSubmit(event)">
-          <div class="form-group">
-            <label class="form-label" for="lead-name">Nome Completo</label>
-            <input type="text" id="lead-name" class="form-control" placeholder="Ex: Maria Aparecida Santos" required>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="lead-whatsapp">WhatsApp (DDD + Número)</label>
-            <input type="tel" id="lead-whatsapp" class="form-control" placeholder="(11) 99999-9999" required>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 0.5rem;">
+      <!-- STEP 1: Formulário de Cadastro Lado a Lado (Grid) -->
+      <div id="modal-lead-form-step">
+        <form id="lead-form" onsubmit="handleLeadSubmit(event)" novalidate>
+          
+          <div class="form-row-grid">
             <div class="form-group">
-              <label class="form-label" for="lead-endereco">Endereço (Rua e Nº)</label>
-              <input type="text" id="lead-endereco" class="form-control" placeholder="Rua das Palmeiras, 45" required>
+              <label class="form-label" for="lead-firstname">Primeiro Nome *</label>
+              <input type="text" id="lead-firstname" class="form-control" placeholder="Ex: Maria" oninput="clearFieldError(this)">
+              <div id="err-lead-firstname" class="field-error-msg">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span>Digite seu nome real.</span>
+              </div>
             </div>
+
             <div class="form-group">
-              <label class="form-label" for="lead-bairro">Bairro</label>
-              <input type="text" id="lead-bairro" class="form-control" placeholder="Centro" required>
+              <label class="form-label" for="lead-lastname">Sobrenome *</label>
+              <input type="text" id="lead-lastname" class="form-control" placeholder="Ex: Silva" oninput="clearFieldError(this)">
+              <div id="err-lead-lastname" class="field-error-msg">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span>Digite seu sobrenome.</span>
+              </div>
             </div>
           </div>
 
-          <!-- Option to join VIP WhatsApp Group -->
-          <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid var(--tenant-primary); padding: 0.75rem; border-radius: var(--radius-sm); margin: 0.75rem 0;">
-            <label style="display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.82rem; color: #fff; cursor: pointer;">
-              <input type="checkbox" id="lead-vip-check" checked style="accent-color: var(--tenant-primary); margin-top: 0.15rem; width: 16px; height: 16px;">
-              <span><strong>🟢 Entrar também no Grupo VIP de Ofertas no WhatsApp!</strong><br><span style="font-size: 0.75rem; color: var(--text-muted);">Receba cupons secretos e promoções relâmpago em primeira mão.</span></span>
+          <div class="form-group">
+            <label class="form-label" for="lead-whatsapp">WhatsApp (com DDD) *</label>
+            <input type="tel" id="lead-whatsapp" class="form-control" placeholder="(11) 99999-9999" maxlength="15" oninput="formatWhatsappInput(this); clearFieldError(this)">
+            <div id="err-lead-whatsapp" class="field-error-msg">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span>Digite um WhatsApp válido com DDD oficial do Brasil.</span>
+            </div>
+          </div>
+
+          <!-- CAMPO DE CEP PARA AUTOPREENCHIMENTO DE ENDEREÇO OFICIAL -->
+          <div class="form-group" style="background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.12); border-radius: 8px; padding: 0.45rem 0.65rem; margin-bottom: 0.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <label class="form-label" for="lead-cep" style="margin: 0; font-size: 0.76rem; color: #34d399;">
+                🔍 Buscar Endereço Oficial por CEP (Opcional)
+              </label>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="text" id="lead-cep" class="form-control" style="padding: 0.45rem 0.65rem; font-size: 0.82rem;" placeholder="00000-000" maxlength="9" oninput="formatCepInput(this); handleCepAutocomplete(this.value)">
+              <button type="button" class="btn-action btn-secondary-action" style="width: auto; padding: 0 0.75rem; font-size: 0.75rem; white-space: nowrap;" onclick="triggerCepSearch()">
+                Buscar CEP
+              </button>
+            </div>
+            <div id="cep-status-msg" style="font-size: 0.73rem; color: #10b981; margin-top: 0.3rem; display: none; line-height: 1.3;"></div>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group">
+              <label class="form-label" for="lead-bairro">Bairro *</label>
+              <input type="text" id="lead-bairro" class="form-control" placeholder="Ex: Centro" oninput="clearFieldError(this)">
+              <div id="err-lead-bairro" class="field-error-msg">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span>Informe um bairro válido.</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="lead-rua">Rua / Logradouro *</label>
+              <input type="text" id="lead-rua" class="form-control" placeholder="Ex: Rua das Flores" oninput="clearFieldError(this)">
+              <div id="err-lead-rua" class="field-error-msg">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span>Digite o nome real da rua.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="lead-numero">Número / Complemento *</label>
+            <input type="text" id="lead-numero" class="form-control" placeholder="Ex: 123 - Apt 42 ou S/N" oninput="clearFieldError(this)">
+            <div id="err-lead-numero" class="field-error-msg">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span>Digite o número da residência (ou S/N).</span>
+            </div>
+          </div>
+
+          <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; margin-top: 0.25rem; margin-bottom: 0.25rem;">
+            <input type="checkbox" id="lead-vip-check" checked style="width: 18px; height: 18px; cursor: pointer;">
+            <label for="lead-vip-check" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;">
+              Quero receber ofertas exclusivas no Grupo VIP do WhatsApp
             </label>
           </div>
 
-          <button type="submit" class="btn-action btn-primary-action" style="margin-top: 0.5rem;">
-            🚀 CONCLUIR CADASTRO E GERAR CUPOM
+          <button type="submit" id="btn-submit-lead" class="btn-action btn-primary-action" style="margin-top: 0.5rem; padding: 0.7rem 1rem; font-size: 0.88rem;">
+            <span class="btn-text-content">Ativar Meu Cupom</span>
+            <div class="spinner"></div>
           </button>
+
+          <div style="text-align: center; margin-top: 0.85rem; font-size: 0.78rem;">
+            <span style="color: var(--text-muted);">Já se cadastrou antes?</span>
+            <button type="button" onclick="toggleQuickLoginView()" style="background: none; border: none; color: #10b981; font-weight: 700; cursor: pointer; text-decoration: underline; margin-left: 0.25rem;">
+              🔑 Entrar apenas com seu WhatsApp
+            </button>
+          </div>
         </form>
       </div>
 
-      <!-- STEP 2: Post-Registration Success Screen -->
-      <div id="modal-lead-success-step" style="display: none; text-align: center;">
-        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎉</div>
-        <h3 style="font-size: 1.25rem; color: var(--tenant-primary); margin-bottom: 0.25rem;">Cadastro Realizado!</h3>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
-          Seja bem-vindo(a), <strong id="succ-customer-name" style="color: #fff;">Maria</strong>! Seu cupom <strong id="succ-coupon-code" style="color: var(--tenant-primary);">PIZZA10</strong> foi ativado.
+      <!-- STEP 1.5: Login Rápido apenas com WhatsApp (Recuperação de Carteira) -->
+      <div id="modal-quick-login-step" style="display: none; text-align: center;">
+        <div style="font-size: 0.88rem; color: #fff; font-weight: 800; margin-bottom: 0.4rem;">
+          🔑 Recuperar Sua Carteira Digital
+        </div>
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.45;">
+          Digite seu número de WhatsApp para acessar seu cupom ativo imediatamente:
         </p>
 
-        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <form id="quick-login-form" onsubmit="handleQuickWhatsappLogin(event)">
+          <div class="form-group" style="text-align: left; margin-bottom: 0.85rem;">
+            <label class="form-label" for="quick-login-whatsapp">Seu WhatsApp (com DDD) *</label>
+            <input type="tel" id="quick-login-whatsapp" class="form-control" placeholder="(11) 99999-9999" required style="font-size: 1rem; text-align: center; font-weight: 700; letter-spacing: 0.03em;">
+            <div id="err-quick-whatsapp" class="field-error-msg">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span>WhatsApp não encontrado na base de clientes desta empresa.</span>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-submit-quick" class="btn-action btn-primary-action" style="margin-bottom: 0.65rem;">
+            <span class="btn-text-content">🚀 Entrar na Minha Carteira</span>
+            <div class="spinner"></div>
+          </button>
+
+          <div>
+            <button type="button" onclick="toggleQuickLoginView()" style="background: none; border: none; color: var(--text-muted); font-size: 0.76rem; cursor: pointer; text-decoration: underline;">
+              ← Voltar para Novo Cadastro
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- STEP 2: SUCESSO PÓS CADASTRO COM ETAPAS CLARAS PASSO 1 E PASSO 2 -->
+      <div id="modal-lead-success-step" style="display: none; text-align: center;">
+        <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); color: #10b981; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem auto; border: 1px solid #10b981;">
+          ✓
+        </div>
+        <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 0.2rem; font-weight: 800;">Cupom Ativado com Sucesso!</h4>
+        <p style="font-size: 0.85rem; color: #34d399; margin-bottom: 0.15rem; font-weight: 700;"><span id="succ-customer-name"></span></p>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.1rem;">
+          Seu cupom exclusivo é <strong id="succ-coupon-code" style="color: var(--tenant-primary); font-family: monospace;">MED10-MARIA84</strong>
+        </p>
+
+        <!-- PASSO 1: Fazer Pedido com o Cupom -->
+        <div class="success-step-box">
+          <span class="step-number-badge">PASSO 1 DE 2 • USAR SEU CUPOM</span>
+          <h5 style="color: #fff; font-weight: 800; font-size: 0.92rem; margin-bottom: 0.3rem;">Fazer Pedido no WhatsApp</h5>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            Abre a conversa da empresa com a sua identificação e cupom j preenchidos.
+          </p>
           <button class="btn-action btn-primary-action" onclick="handleSendCouponWhatsapp()">
-            💬 FAZER PEDIDO COM CUPOM NO WHATSAPP
+            💬 Fazer Pedido com Cupom no WhatsApp
           </button>
+        </div>
 
-          <button id="btn-action-vip-group" class="btn-action btn-secondary-action" style="border-color: #25d366; color: #25d366;">
-            📢 ENTRAR NO GRUPO VIP DE PROMOÇÕES
+        <!-- PASSO 2: Entrar no Grupo VIP (se marcado) -->
+        <div id="box-vip-step" class="success-step-box" style="border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.04);">
+          <span class="step-number-badge" style="color: #f59e0b;">PASSO 2 DE 3 • GRUPO VIP</span>
+          <h5 style="color: #fff; font-weight: 800; font-size: 0.92rem; margin-bottom: 0.3rem;">Entrar no Grupo VIP de Ofertas</h5>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            Receba promoções semanais relâmpago exclusivas para membros do WhatsApp.
+          </p>
+          <button id="btn-action-vip-group" class="btn-action btn-secondary-action" style="border-color: #f59e0b; color: #f59e0b;">
+            👑 Entrar no Grupo VIP de Promoções ↗
           </button>
+        </div>
 
-          <button class="btn-action btn-secondary-action" style="font-size: 0.8rem; padding: 0.5rem;" onclick="resetLeadModalView()">
-            Fechar
+        <!-- PASSO 3: Siga Nossa Loja no Instagram -->
+        <div id="box-instagram-step" class="success-step-box" style="border-color: rgba(236, 72, 153, 0.4); background: rgba(236, 72, 153, 0.05); margin-top: 0.5rem;">
+          <span class="step-number-badge" style="color: #ec4899;">PASSO 3 DE 3 • INSTAGRAM OFICIAL</span>
+          <h5 style="color: #fff; font-weight: 800; font-size: 0.92rem; margin-bottom: 0.3rem;">Siga Nossa Loja no Instagram</h5>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            Acompanhe o sorteio ao vivo e fique por dentro de novos descontos!
+          </p>
+          <button id="btn-action-instagram" class="btn-action btn-secondary-action" style="border-color: #ec4899; color: #ec4899; width: 100%;">
+            📸 Siga no Instagram ↗
           </button>
         </div>
       </div>
-
     </div>
   </div>
 
-  <!-- App Script -->
+  <!-- MODAL DE ESCOLHA INTELIGENTE PARA CLIENTES NOVOS (WHATSAPP vs DESCONTO) -->
+  <div class="modal-overlay" id="modal-whatsapp-choice">
+    <div class="modal-box" style="text-align: center; padding: 1.1rem; position: relative;">
+      
+      <!-- BOTÃO SETINHA VOLTAR (CANTO SUPERIOR ESQUERDO) -->
+      <button onclick="closeModal('modal-whatsapp-choice')" title="Voltar para a bio" aria-label="Voltar para a página anterior" style="position: absolute; left: 14px; top: 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 50%; width: 32px; height: 32px; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+        ←
+      </button>
+
+      <!-- BOTÃO FECHAR X (CANTO SUPERIOR DIREITO) -->
+      <button onclick="closeModal('modal-whatsapp-choice')" title="Fechar" aria-label="Fechar" style="position: absolute; right: 14px; top: 14px; background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer;">
+        &times;
+      </button>
+
+      <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); color: #10b981; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; margin: 0.25rem auto 0.85rem auto; border: 1px solid #10b981;">
+        🎁
+      </div>
+      <h3 id="choice-modal-title" style="font-size: 1.1rem; color: #fff; margin-bottom: 0.35rem; font-weight: 800;">Ganhe 10% OFF na 1 Compra!</h3>
+      <p id="choice-modal-subtitle" style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.45;">
+        Você tem direito a um cupom exclusivo + Acesso ao Grupo VIP no WhatsApp. Deseja resgatar agora antes de fazer seu pedid✅
+      </p>
+
+      <button id="choice-btn-coupon" class="btn-action btn-primary-action" style="margin-bottom: 0.65rem;" onclick="closeModal('modal-whatsapp-choice'); openMainCouponModal();">
+        🏷️ Resgatar 10% OFF + Grupo VIP
+      </button>
+
+      <button id="choice-btn-direct" class="btn-action btn-secondary-action" style="padding: 0.6rem; font-size: 0.8rem; border-color: rgba(255,255,255,0.15); color: var(--text-muted);" onclick="closeModal('modal-whatsapp-choice'); proceedDirectToWhatsapp();">
+        💬 Ir Direto ao WhatsApp sem Desconto ↗
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL DE STATUS: CLIENTE JÁ VALIDADO NO QR CODE (SORTEIO / BALCÃO) -->
+  <div class="modal-overlay" id="modal-qr-already-validated">
+    <div class="modal-box" style="text-align: center; padding: 1.25rem; position: relative; border-color: rgba(16, 185, 129, 0.4);">
+      
+      <button onclick="closeModal('modal-qr-already-validated')" title="Fechar" aria-label="Fechar" style="position: absolute; right: 14px; top: 14px; background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer;">
+        &times;
+      </button>
+
+      <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(16, 185, 129, 0.18); color: #10b981; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; margin: 0.2rem auto 0.75rem auto; border: 2px solid #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);">
+        ✓
+      </div>
+
+      <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.72rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-block; margin-bottom: 0.5rem;">
+        VALIDAÇÃO CONFIRMADA
+      </span>
+
+      <h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 0.25rem; font-weight: 800;">Cliente Já Validado! ✅</h3>
+      <p style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.45;">
+        Oláá <strong id="qr-val-name" style="color: #fff;">Cliente</strong>! Seu cadastro j está 100% ativo e validado em nosso sistema de benefícios e sorteios.
+      </p>
+
+      <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.85rem; text-align: left; margin-bottom: 1rem; font-size: 0.8rem;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 0.35rem;">
+          <span style="color: var(--text-muted);">Cupom Ativo:</span>
+          <strong id="qr-val-coupon" style="color: var(--tenant-primary); font-family: monospace;">MED10-VIP</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 0.35rem;">
+          <span style="color: var(--text-muted);">Última Validação:</span>
+          <strong id="qr-val-date" style="color: #fff;">Hoje</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Histórico QR Code:</span>
+          <strong id="qr-val-count" style="color: #f59e0b;">1º Escaneamento</strong>
+        </div>
+      </div>
+
+      <button id="btn-action-qr-insta" class="btn-action btn-primary-action" style="margin-bottom: 0.5rem; background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); border: none; box-shadow: 0 4px 15px rgba(236,72,153,0.3);">
+        📸 Siga a Loja no Instagram ↗
+      </button>
+
+      <button class="btn-action btn-secondary-action" style="padding: 0.6rem; font-size: 0.82rem;" onclick="closeModal('modal-qr-already-validated')">
+        🛍️ Ver Ofertas da Bio
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Permite rolar o carrossel clicando e arrastando no Desktop
+    document.addEventListener('DOMContentLoaded', () => {
+      const slider = document.getElementById('highlights-container');
+      if(!slider) return;
+      let isDown = false;
+      let startX;
+      let scrollLeft;
+
+      slider.addEventListener('mousedown', (e) => {
+        isDown = true;
+        slider.style.scrollSnapType = 'none'; // Pausa o snap ao arrastar
+        startX = e.pageX - slider.offsetLeft;
+        scrollLeft = slider.scrollLeft;
+      });
+      slider.addEventListener('mouseleave', () => {
+        isDown = false;
+        slider.style.scrollSnapType = 'x mandatory';
+      });
+      slider.addEventListener('mouseup', () => {
+        isDown = false;
+        slider.style.scrollSnapType = 'x mandatory';
+      });
+      slider.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - slider.offsetLeft;
+        const walk = (x - startX) * 1.5; // Velocidade do arraste
+        slider.scrollLeft = scrollLeft - walk;
+      });
+    });
+  </script>
   <script src="js/app.js"></script>
 </body>
 </html>
