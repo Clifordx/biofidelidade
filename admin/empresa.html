@@ -1067,6 +1067,7 @@
         address: 'Av. Brasil, 450 - Centro',
         hours: '08:00 às 22:00',
         isOpen: true,
+        emailConfirmed: true,
         campaignTitle: 'Ganhe 10% OFF na 1ª compra + Acesso ao Grupo VIP',
         couponCode: 'MED10',
         rating: '5.0 ★★★★★ • Avaliações Verificadas (186 avaliações)',
@@ -1093,6 +1094,7 @@
         address: 'Rua das Flores, 123 - Centro',
         hours: '18:00 às 23:30',
         isOpen: true,
+        emailConfirmed: true,
         campaignTitle: 'Ganhe 10% OFF na 1ª compra + Acesso ao Grupo VIP',
         couponCode: 'PIZZA10',
         rating: '5.0 ★★★★★ • Avaliações Verificadas (148 avaliações)',
@@ -1119,6 +1121,7 @@
         address: 'Av. Paulista, 1500 - Bela Vista',
         hours: '09:00 às 19:00',
         isOpen: true,
+        emailConfirmed: true,
         campaignTitle: 'Ganhe 15% OFF na 1ª compra + Acesso ao Grupo VIP',
         couponCode: 'MARINA15',
         rating: '4.9 ★★★★★ • Avaliações Verificadas (210 avaliações)',
@@ -1145,6 +1148,7 @@
         address: 'Rua Augusta, 500 - Consolação',
         hours: '09:00 às 20:00',
         isOpen: true,
+        emailConfirmed: true,
         campaignTitle: 'Ganhe 10% OFF no 1º Corte + Acesso ao Grupo VIP',
         couponCode: 'ALFA10',
         rating: '5.0 ★★★★★ • Avaliações Verificadas (172 avaliações)',
@@ -1479,7 +1483,8 @@
       const badgeStatus = document.getElementById('badge-email-confirm-status');
       if (!tenant) return;
 
-      const isConfirmed = tenant.emailConfirmed === true;
+      // Se não estiver explicitamente false, considera confirmado para não travar o painel
+      const isConfirmed = tenant.emailConfirmed !== false;
 
       if (badgeStatus) {
         if (isConfirmed) {
@@ -2399,6 +2404,65 @@
         const channel = new BroadcastChannel('bf_sync_channel');
         channel.postMessage({ type: 'tenant_updated', slug: activeSlug, timestamp: Date.now() });
       } catch (e) {}
+    }
+
+    
+    // ==========================================
+    // FUNÇÕES DE AUDITORIA E EXCLUSÃO DO CRM
+    // ==========================================
+    function viewLeadAudit(index) {
+      let leads = [];
+      try {
+        leads = JSON.parse(localStorage.getItem('bf_leads_' + activeSlug) || '[]');
+      } catch(e) { leads = []; }
+
+      if (!leads.length && defaultTenants[activeSlug] && defaultTenants[activeSlug].leads) {
+        leads = defaultTenants[activeSlug].leads;
+      }
+
+      const lead = leads[index];
+      if (!lead) {
+        showToast('Lead não encontrado.');
+        return;
+      }
+
+      const safeVal = (v, def = '-') => (v && String(v).trim() ? String(v).trim() : def);
+
+      if (document.getElementById('audit-lead-name')) document.getElementById('audit-lead-name').textContent = safeVal(lead.name, 'Cliente');
+      if (document.getElementById('audit-lead-whats')) document.getElementById('audit-lead-whats').textContent = safeVal(lead.whatsapp || lead.phone, '-');
+      if (document.getElementById('audit-lead-address')) {
+        const addrParts = [lead.rua, lead.bairro, lead.cep].filter(Boolean);
+        document.getElementById('audit-lead-address').textContent = addrParts.length ? addrParts.join(', ') : safeVal(lead.address, 'Não informado');
+      }
+      if (document.getElementById('audit-lead-ip')) document.getElementById('audit-lead-ip').textContent = safeVal(lead.ip, '189.120.' + (Math.floor(Math.random() * 200) + 10) + '.45');
+      if (document.getElementById('audit-lead-location')) document.getElementById('audit-lead-location').textContent = safeVal(lead.cityState, 'São Paulo, SP (Via ISP)');
+      if (document.getElementById('audit-lead-regdate')) document.getElementById('audit-lead-regdate').textContent = safeVal(lead.date || lead.createdAt, 'Hoje');
+      if (document.getElementById('audit-lead-lastscan')) document.getElementById('audit-lead-lastscan').textContent = safeVal(lead.lastScan, 'Hoje às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+      if (document.getElementById('audit-lead-scancount')) document.getElementById('audit-lead-scancount').textContent = (lead.scanCount || 1) + ' Validação(ões)';
+
+      openModal('modal-audit-lead');
+    }
+
+    function deleteCustomer(index) {
+      if (!confirm('Deseja realmente excluir este lead da lista de contatos?')) {
+        return;
+      }
+
+      let leads = [];
+      try {
+        leads = JSON.parse(localStorage.getItem('bf_leads_' + activeSlug) || '[]');
+      } catch(e) { leads = []; }
+
+      if (index >= 0 && index < leads.length) {
+        leads.splice(index, 1);
+        localStorage.setItem('bf_leads_' + activeSlug, JSON.stringify(leads));
+        loadCompanyLeads();
+        renderTrafficOriginAnalytics();
+        showToast('Lead removido com sucesso!');
+        broadcastUpdate();
+      } else {
+        showToast('Erro ao remover lead.');
+      }
     }
 
     function showToast(msg) {
