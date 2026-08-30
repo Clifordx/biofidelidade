@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acesso Corporativo | BioFidelidade SaaS</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../css/style.css">
+
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: #050505;
+      background-image: radial-gradient(circle at top right, rgba(139, 92, 246, 0.1), transparent 40%),
+                        radial-gradient(circle at bottom left, rgba(16, 185, 137, 0.05), transparent 40%);
+      -webkit-font-smoothing: antialiased;
+    }
+    .auth-container {
+      width: 100%;
+      max-width: 440px;
+      z-index: 10;
+    }
+    .brand-logo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #ffffff;
+      text-decoration: none;
+      letter-spacing: -0.03em;
+    }
+    .brand-logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      font-weight: 900;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    .tab-switcher-buttons {
+      display: flex;
+      gap: 0.35rem;
+      margin-bottom: 1.5rem;
+      background: rgba(20, 20, 20, 0.6);
+      padding: 0.4rem;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.05);
+      backdrop-filter: blur(12px);
+    }
+    .tab-toggle-btn {
+      flex: 1;
+      padding: 0.85rem;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #a1a1aa;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .tab-toggle-btn:hover { color: #fff; background: rgba(255,255,255,0.02); }
+    .tab-toggle-btn.active {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+      border-color: rgba(139, 92, 246, 0.5);
+    }
+    .password-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .password-toggle-eye {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      color: #a1a1aa;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .password-toggle-eye:hover {
+      color: #fff;
+    }
+    .toast-banner {
+      display: none;
+      padding: 1rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      line-height: 1.4;
+      animation: fadeIn 0.3s ease;
+      backdrop-filter: blur(12px);
+    }
+    .toast-success {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+    }
+    .toast-error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+    }
+    .email-template-box {
+      background: #0a0a0a;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 2rem;
+      font-family: 'Inter', sans-serif;
+      color: #f8fafc;
+      text-align: left;
+      box-shadow: inset 0 2px 12px rgba(255,255,255,0.02);
+    }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+
+  <script>
+    function showForm(formType) {
+      hideToast();
+      const loginContainer = document.getElementById('form-login-container');
+      const signupContainer = document.getElementById('form-signup-container');
+      const forgotContainer = document.getElementById('form-forgot-container');
+      const mainSwitcher = document.getElementById('main-tabs-switcher');
+      const btnLogin = document.getElementById('tab-btn-login');
+      const btnSignup = document.getElementById('tab-btn-signup');
+
+      if (!loginContainer || !signupContainer || !forgotContainer) return;
+
+      if (formType === 'forgot') {
+        loginContainer.style.display = 'none';
+        signupContainer.style.display = 'none';
+        forgotContainer.style.display = 'block';
+        if (mainSwitcher) mainSwitcher.style.display = 'none';
+      } else if (formType === 'signup') {
+        loginContainer.style.display = 'none';
+        signupContainer.style.display = 'block';
+        forgotContainer.style.display = 'none';
+        if (mainSwitcher) mainSwitcher.style.display = 'flex';
+        if (btnSignup && btnLogin) {
+          btnSignup.classList.add('active');
+          btnLogin.classList.remove('active');
+        }
+      } else {
+        loginContainer.style.display = 'block';
+        signupContainer.style.display = 'none';
+        forgotContainer.style.display = 'none';
+        if (mainSwitcher) mainSwitcher.style.display = 'flex';
+        if (btnSignup && btnLogin) {
+          btnLogin.classList.add('active');
+          btnSignup.classList.remove('active');
+        }
+      }
+    }
+
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast-notification');
+      if (!toast) return;
+      toast.className = `toast-banner ${type === 'success' ? 'toast-success' : 'toast-error'}`;
+      toast.innerHTML = msg;
+      toast.style.display = 'block';
+    }
+
+    function hideToast() {
+      const toast = document.getElementById('toast-notification');
+      if (toast) toast.style.display = 'none';
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const eyeIcon = btn.querySelector('svg');
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (eyeIcon) {
+          eyeIcon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>`;
+        }
+      } else {
+        input.type = 'password';
+        if (eyeIcon) {
+          eyeIcon.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>`;
+        }
+      }
+    }
+
+    function autoFillSlug(text) {
+      const slugInput = document.getElementById('reg-slug');
+      if (slugInput) {
+        const cleanSlug = text.toLowerCase()
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]/g, '');
+        slugInput.value = cleanSlug;
+      }
+    }
+
+    function resetSignupForm() {
+      if (document.getElementById('reg-company-name')) document.getElementById('reg-company-name').value = '';
+      if (document.getElementById('reg-slug')) document.getElementById('reg-slug').value = '';
+      if (document.getElementById('reg-whatsapp')) document.getElementById('reg-whatsapp').value = '';
+      if (document.getElementById('reg-email')) document.getElementById('reg-email').value = '';
+      if (document.getElementById('reg-password')) document.getElementById('reg-password').value = '';
+    }
+
+    function handleLoginSubmit() {
+      hideToast();
+      const emailEl = document.getElementById('login-email');
+      const email = emailEl ? emailEl.value.trim() : '';
+
+      if (!email) {
+        showToast('Por favor, informe seu e-mail de acesso.', 'error');
+        return;
+      }
+
+      if (email.toLowerCase().includes('master') || email.toLowerCase().includes('clifordx') || email === 'admin@biofidelidade.com.br') {
+        showToast('Acesso Master Autenticado. Entrando no Painel Global...');
+        setTimeout(() => { window.location.href = 'master.html'; }, 1000);
+        return;
+      }
+
+      const customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}');
+      const tenantMatch = Object.values(customTenants).find(t => t.email && t.email.toLowerCase() === email.toLowerCase());
+
+      if (tenantMatch) {
+        showToast(`Login realizado com sucesso! Entrando em <strong>${tenantMatch.name}</strong>...`);
+        setTimeout(() => { window.location.href = `empresa.html?tenant=${encodeURIComponent(tenantMatch.slug)}`; }, 1000);
+        return;
+      }
+
+      showToast('Login realizado com sucesso! Entrando no seu painel...');
+      setTimeout(() => { window.location.href = 'empresa.html'; }, 1000);
+    }
+
+    function handleSignupSubmit() {
+      hideToast();
+      try {
+        const nameEl = document.getElementById('reg-company-name');
+        const slugEl = document.getElementById('reg-slug');
+        const nicheEl = document.getElementById('reg-niche');
+        const whatsappEl = document.getElementById('reg-whatsapp');
+        const emailEl = document.getElementById('reg-email');
+
+        const companyName = nameEl ? nameEl.value.trim() : '';
+        const rawSlug = slugEl ? slugEl.value.trim() : '';
+        const niche = nicheEl ? nicheEl.value : 'Saúde, Farmácia & Bem-Estar';
+        const whatsapp = whatsappEl ? whatsappEl.value.trim() : '';
+        const email = emailEl ? emailEl.value.trim() : '';
+
+        const slug = rawSlug || companyName.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        if (!companyName) {
+          showToast('Por favor, digite o Nome da Sua Empresa.', 'error');
+          return;
+        }
+
+        if (!slug) {
+          showToast('Por favor, digite o Link no Site (Slug).', 'error');
+          return;
+        }
+
+        const newTenant = {
+          id: 'comp-' + Date.now(),
+          name: companyName,
+          slug: slug,
+          niche: niche,
+          email: email,
+          banner: 'https://images.unsplash.com/photo-1576602976047-174e57a47881?w=800',
+          primaryColor: '#10b981',
+          whatsapp: whatsapp || '5511999990000',
+          vipGroupUrl: '',
+          instagram: '@' + slug,
+          bio: `${companyName} • ${niche}`,
+          address: 'Endereço a configurar',
+          hours: '08:00 s 22:00',
+          isOpen: true,
+          views: 0,
+          leads: 0,
+          vipCount: 0,
+          couponsCount: 0,
+          campaignTitle: 'Oferta de Boas-Vindas',
+          couponCode: 'BEMVINDO10',
+          rating: '5.0 ★★★★★ (Novo)',
+          testimonials: [`"Excelente atendimento na ${companyName}! ⭐⭐⭐⭐⭐ - Cliente"`],
+          payments: ['Pix', 'Cartão de Crédito/Débito', 'Dinheiro'],
+          highlights: [
+            { name: 'Produto Destaque 1', price: 'R$ 29,90', img: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400' },
+            { name: 'Produto Destaque 2', price: 'R$ 39,90', img: 'https://images.unsplash.com/photo-1576602976047-174e57a47881?w=400' },
+            { name: 'Combo Especial 3', price: 'R$ 59,90', img: 'https://images.unsplash.com/photo-1585435557343-3b092031a831?w=400' }
+          ]
+        };
+
+        let customTenants = {};
+        try {
+          customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}');
+        } catch (e) {
+          customTenants = {};
+        }
+        customTenants[slug] = newTenant;
+        localStorage.setItem('bf_custom_tenants', JSON.stringify(customTenants));
+
+        resetSignupForm();
+        showForm('login');
+
+        showToast(`Empresa <strong>"${companyName}"</strong> criada com sucesso! Redirecionando...`);
+        setTimeout(() => {
+          window.location.href = `empresa.html?tenant=${encodeURIComponent(slug)}`;
+        }, 1200);
+      } catch (err) {
+        showToast('Ocorreu um erro ao criar a empresa: ' + err.message, 'error');
+      }
+    }
+
+    function handleForgotPasswordSubmit() {
+      hideToast();
+      const emailEl = document.getElementById('forgot-email');
+      const email = emailEl ? emailEl.value.trim() : '';
+
+      if (!email) {
+        showToast('Por favor, digite o e-mail cadastrado da sua empresa.', 'error');
+        return;
+      }
+
+      openModal('modal-email-preview');
+    }
+
+    function openModal(id) {
+      const m = document.getElementById(id);
+      if (m) m.classList.add('active');
+    }
+
+    function closeModal(id) {
+      const m = document.getElementById(id);
+      if (m) m.classList.remove('active');
+    }
+  </script>
+</head>
+<body>
+
+  <div class="auth-container">
+    
+    <!-- Logo Header CORPORATIVO -->
+    <div style="text-align: center; margin-bottom: 1.5rem;">
+      <a href="../index.html" class="brand-logo-badge">
+        <span class="brand-logo-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        </span>
+        BioFidelidade
+      </a>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.35rem;">
+        Portal Administrativo da Plataforma
+      </p>
+    </div>
+
+    <!-- Toast Notification Banner -->
+    <div id="toast-notification" class="toast-banner"></div>
+
+    <!-- Botões de Troca de Aba (Login vs Cadastro com ícones SVG) -->
+    <div class="tab-switcher-buttons" id="main-tabs-switcher">
+      <button type="button" id="tab-btn-login" class="tab-toggle-btn active" onclick="showForm('login')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+        Acessar Conta
+      </button>
+      <button type="button" id="tab-btn-signup" class="tab-toggle-btn" onclick="showForm('signup')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+        Criar Nova Empresa
+      </button>
+    </div>
+
+    <div class="glass-card">
+      
+      <!-- FORM 1: LOGIN DA EMPRESA -->
+      <div id="form-login-container">
+        <h3 style="font-size: 1.15rem; margin-bottom: 1rem; color: #fff; font-weight: 700;">Acessar Painel da Minha Empresa</h3>
+        
+        <div class="form-group">
+          <label class="form-label" for="login-email">E-mail de Acesso</label>
+          <input type="email" id="login-email" class="form-control" placeholder="seuemail@empresa.com">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="login-password">Senha de Acesso</label>
+          <div class="password-wrapper">
+            <input type="password" id="login-password" class="form-control" placeholder="••••••••" style="padding-right: 2.5rem;">
+            <button type="button" class="password-toggle-eye" onclick="togglePasswordVisibility('login-password', this)" title="Mostrar/Ocultar Senha">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="button" class="btn-action btn-primary-action" style="margin-top: 0.5rem;" onclick="handleLoginSubmit()">
+          ENTRAR NO PAINEL
+        </button>
+
+        <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; text-align: center;">
+          <button type="button" class="btn-action btn-secondary-action" style="padding: 0.5rem; font-size: 0.82rem;" onclick="showForm('forgot')">
+            Esqueceu sua senha? Clique aqui
+          </button>
+          
+          <button type="button" style="background: none; border: none; font-size: 0.82rem; color: var(--text-muted); cursor: pointer;" onclick="showForm('signup')">
+            Não tem conta ainda? Clique aqui para Criar Sua Empresa
+          </button>
+        </div>
+      </div>
+
+      <!-- FORM 2: CADASTRO DE NOVA EMPRESA (COM CATEGORIAS PROFISSIONAIS) -->
+      <div id="form-signup-container" style="display: none;">
+        <h3 style="font-size: 1.15rem; margin-bottom: 1rem; color: #fff; font-weight: 700;">Cadastrar Nova Empresa</h3>
+
+        <div class="form-group">
+          <label class="form-label" for="reg-company-name">Nome da Sua Empresa *</label>
+          <input type="text" id="reg-company-name" class="form-control" placeholder="Ex: Med Farma" oninput="autoFillSlug(this.value)">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="reg-niche">Segmento / Categoria Profissional *</label>
+          <select id="reg-niche" class="form-control">
+            <option value="Saúde, Farmácia & Bem-Estar">Saúde, Farmácia & Bem-Estar</option>
+            <option value="Alimentação, Gastronomia & Delivery">Alimentação, Gastronomia & Delivery</option>
+            <option value="Moda, Vestuário & Acessórios">Moda, Vestuário & Acessórios</option>
+            <option value="Estética, Beleza & Barbearia">Estética, Beleza & Barbearia</option>
+            <option value="Confeitaria, Doceria & Panificação">Confeitaria, Doceria & Panificação</option>
+            <option value="Supermercados, Hortifruti & Mercearia">Supermercados, Hortifruti & Mercearia</option>
+            <option value="Pet Shop & Serviços Veterinários">Pet Shop & Serviços Veterinários</option>
+            <option value="Automotivo, Oficinas & Lava-Rápido">Automotivo, Oficinas & Lava-Rápido</option>
+            <option value="Construção, Reforma & Arquitetura">Construção, Reforma & Arquitetura</option>
+            <option value="Eletrônicos, Informática & Assistência">Eletrônicos, Informática & Assistência</option>
+            <option value="Serviços Profissionais & Consultoria">Serviços Profissionais & Consultoria</option>
+            <option value="Academia, Esportes & Suplementos">Academia, Esportes & Suplementos</option>
+            <option value="Comércio & Serviços Gerais">Comércio & Serviços Gerais</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="reg-slug">Seu Link no Site (Slug Único) *</label>
+          <div style="display: flex; align-items: center; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding-left: 0.75rem;">
+            <span style="font-size: 0.8rem; color: var(--text-muted);">site.com/</span>
+            <input type="text" id="reg-slug" class="form-control" placeholder="medfarma" style="border: none; background: transparent;">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="reg-whatsapp">WhatsApp da Empresa (com DDD)</label>
+          <input type="tel" id="reg-whatsapp" class="form-control" placeholder="(11) 99999-9999">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="reg-email">E-mail do Lojista</label>
+          <input type="email" id="reg-email" class="form-control" placeholder="admin@medfarma.com">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="reg-password">Crie uma Senha</label>
+          <div class="password-wrapper">
+            <input type="password" id="reg-password" class="form-control" placeholder="••••••••" style="padding-right: 2.5rem;">
+            <button type="button" class="password-toggle-eye" onclick="togglePasswordVisibility('reg-password', this)" title="Mostrar/Ocultar Senha">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="button" class="btn-action btn-primary-action" style="margin-top: 0.5rem;" onclick="handleSignupSubmit()">
+          CRIAR MINHA EMPRESA AGORA
+        </button>
+
+        <div style="text-align: center; margin-top: 1rem;">
+          <button type="button" style="background: none; border: none; font-size: 0.82rem; color: var(--text-muted); cursor: pointer;" onclick="showForm('login')">
+            Já tem uma conta? Clique aqui para Acessar
+          </button>
+        </div>
+      </div>
+
+      <!-- FORM 3: ESQUECEU A SENHA (RECUPERAÇÃO) -->
+      <div id="form-forgot-container" style="display: none;">
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem; color: #fff; font-weight: 700;">Recuperar Senha de Acesso</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          Digite o e-mail cadastrado da sua empresa para enviarmos o link seguro de redefinição de senha:
+        </p>
+
+        <div class="form-group">
+          <label class="form-label" for="forgot-email">E-mail Cadastrado</label>
+          <input type="email" id="forgot-email" class="form-control" placeholder="seuemail@empresa.com">
+        </div>
+
+        <button type="button" class="btn-action btn-primary-action" style="margin-top: 0.5rem;" onclick="handleForgotPasswordSubmit()">
+          ENVIAR LINK DE RECUPERAÇÃO
+        </button>
+
+        <div style="text-align: center; margin-top: 1.25rem;">
+          <button type="button" style="background: none; border: none; font-size: 0.82rem; color: var(--text-muted); cursor: pointer;" onclick="showForm('login')">
+            ← Voltar para o Login
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="text-align: center; margin-top: 1.5rem;">
+      <a href="../index.html" style="font-size: 0.82rem; color: var(--text-muted);">← Voltar para o site público</a>
+    </div>
+
+  </div>
+
+  <!-- Modal Visual do E-mail Enviado -->
+  <div class="modal-overlay" id="modal-email-preview">
+    <div class="modal-box" style="max-width: 500px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <span style="font-size: 0.8rem; font-weight: 700; color: var(--tenant-primary); text-transform: uppercase;">E-Mail Enviado Com Sucesso</span>
+        <button onclick="closeModal('modal-email-preview')" style="background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer;">&times;</button>
+      </div>
+
+      <div class="email-template-box">
+        <div style="border-bottom: 1px solid #334155; padding-bottom: 1rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 800; font-size: 1.2rem; color: #10b981;">BioFidelidade</span>
+          <span style="font-size: 0.75rem; color: #94a3b8;">Segurança da Conta</span>
+        </div>
+
+        <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 0.75rem;">Solicitação de Redefinição de Senha</h4>
+        <p style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.5; margin-bottom: 1.25rem;">
+          Oláá! Recebemos um pedido para redefinir a senha de acesso à sua conta da empresa no <strong>BioFidelidade</strong>. Clique no botão abaixo para criar sua nova senha:
+        </p>
+
+        <div style="text-align: center; margin: 1.5rem 0;">
+          <a href="reset-password.html" class="btn-action btn-primary-action" style="display: inline-block; width: auto; padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 8px;">
+            Redefinir Minha Senha Agora
+          </a>
+        </div>
+
+        <p style="font-size: 0.78rem; color: #64748b; margin-top: 1.25rem; border-top: 1px solid #334155; padding-top: 1rem;">
+          Se você não solicitou esta alteração, ignore este e-mail com segurança. O link expira em 24 horas.<br>
+          &copy; 2026 BioFidelidade SaaS. Todos os direitos reservados.
+        </p>
+      </div>
+
+      <button class="btn-action btn-secondary-action" style="margin-top: 1rem;" onclick="closeModal('modal-email-preview')">
+        Entendido!
+      </button>
+    </div>
+  </div>
+
+</body>
+</html>
