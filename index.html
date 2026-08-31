@@ -851,6 +851,48 @@
     </div>
   </div>
 
+  <!-- MODAL DE CADASTRO DO QR CODE / SORTEIO -->
+  <div class="modal-overlay" id="modal-qr-cadastrar">
+    <div class="modal-box" style="text-align: center; border-color: rgba(16, 185, 129, 0.4);">
+      <div id="modal-qr-form-step">
+        <h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 0.5rem; font-weight: 800;">Participar do Sorteio! 🎉</h3>
+        <p style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 1.2rem; line-height: 1.45;">
+          Preencha seus dados para validar seu check-in e participar.
+        </p>
+
+        <form id="qr-form" onsubmit="handleQrSubmit(event)" novalidate style="display: flex; flex-direction: column; gap: 0.8rem; text-align: left;">
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.75rem;">Seu Nome Completo</label>
+            <input type="text" id="qr-name" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.75rem;">WhatsApp (DDD + Número)</label>
+            <input type="tel" id="qr-whatsapp" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.75rem;">Seu CEP</label>
+            <input type="text" id="qr-cep" class="form-control" required>
+          </div>
+          
+          <button type="submit" class="btn-action btn-primary-action" style="margin-top: 0.5rem;">Validar Check-in</button>
+        </form>
+      </div>
+
+      <div id="modal-qr-success-step" style="display: none; text-align: center;">
+        <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(16, 185, 129, 0.18); color: #10b981; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem auto; border: 2px solid #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);">
+          ✅
+        </div>
+        <h3 style="font-size: 1.3rem; color: #fff; margin-bottom: 0.25rem; font-weight: 800;">Cliente Validado!</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          Tudo certo! Para finalizar, siga nosso Instagram abaixo.
+        </p>
+        <button onclick="handleQrInstagramFollow()" class="btn-action btn-primary-action" style="background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); border: none; box-shadow: 0 4px 15px rgba(236,72,153,0.3);">
+          📸 Siga a Empresa no Instagram
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL DE STATUS: CLIENTE JÁ VALIDADO NO QR CODE (SORTEIO / BALCÃO) -->
   <div class="modal-overlay" id="modal-qr-already-validated">
     <div class="modal-box" style="text-align: center; padding: 1.25rem; position: relative; border-color: rgba(16, 185, 129, 0.4);">

@@ -127,6 +127,13 @@ document.addEventListener('DOMContentLoaded', () => {
   loadCustomerSession();
   renderTenantUI();
   startTestimonialRotation();
+
+  // Check if opened via QR Code
+  const urlParams = new URLSearchParams(window.location.search);
+  const src = urlParams.get('src');
+  if (src === 'qrcode' || src === 'qrcode_balcao') {
+    handleQrCodeScan();
+  }
 });
 
 // Detect Tenant Slug from URL path or default to pizzariacentral
@@ -399,4 +406,74 @@ function escapeHtml(str) {
       "'": '&#039;'
     }[m];
   });
+}
+
+/* ==========================================================================
+   QR Code Registration Flow
+   ========================================================================== */
+
+function handleQrCodeScan() {
+  if (currentCustomer && currentCustomer.qrValidated) {
+    document.getElementById('qr-val-name').textContent = currentCustomer.name || 'Cliente';
+    const qrValDate = document.getElementById('qr-val-date');
+    if (qrValDate) qrValDate.textContent = new Date().toLocaleDateString('pt-BR');
+    
+    openModal('modal-qr-already-validated');
+  } else {
+    // Reset steps
+    document.getElementById('modal-qr-form-step').style.display = 'block';
+    document.getElementById('modal-qr-success-step').style.display = 'none';
+    openModal('modal-qr-cadastrar');
+  }
+}
+
+async function handleQrSubmit(event) {
+  event.preventDefault();
+
+  const name = document.getElementById('qr-name').value.trim();
+  const whatsapp = document.getElementById('qr-whatsapp').value.trim();
+  const cep = document.getElementById('qr-cep').value.trim();
+
+  if (!name || !whatsapp || !cep) return;
+
+  currentCustomer = {
+    name,
+    whatsapp,
+    cep,
+    source: 'qrcode_sorteio',
+    qrValidated: true,
+    registeredAt: new Date().toISOString()
+  };
+
+  const sessionKey = `bf_customer_${currentTenant.slug}`;
+  localStorage.setItem(sessionKey, JSON.stringify(currentCustomer));
+
+  // Save to Supabase Cloud Database if client connected
+  if (window.supabaseClient) {
+    try {
+      await window.supabaseClient.from('customers').insert([{
+        company_id: currentTenant.id,
+        name,
+        whatsapp,
+        bairro: cep,
+        source: 'qrcode_sorteio'
+      }]);
+    } catch (e) {
+      console.error('Supabase QR Insert Error', e);
+    }
+  }
+
+  // Hide form, show success
+  document.getElementById('modal-qr-form-step').style.display = 'none';
+  document.getElementById('modal-qr-success-step').style.display = 'block';
+}
+
+function handleQrInstagramFollow() {
+  const igHandle = currentTenant.instagram || 'instagram';
+  const igUrl = `https://instagram.com/${igHandle.replace('@', '')}`;
+  window.open(igUrl, '_blank');
+  
+  setTimeout(() => {
+    closeModal('modal-qr-cadastrar');
+  }, 1000);
 }
