@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS public.companies (
     opening_hours JSONB DEFAULT '{"mon_fri": "09:00 - 19:00", "sat": "09:00 - 14:00", "sun": "fechado"}'::jsonb,
     is_open_override BOOLEAN DEFAULT NULL,
     is_active BOOLEAN DEFAULT true,
+    subscription_status TEXT DEFAULT 'active' CHECK (subscription_status IN ('active', 'past_due', 'canceled')),
+    subscription_expires_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

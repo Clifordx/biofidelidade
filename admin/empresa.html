@@ -325,6 +325,12 @@
   </style>
   <script>
     function showTab(tabId, btn) {
+      // Verificação de inadimplência
+      if (currentTenantObject && currentTenantObject.subscription_status === 'past_due' && tabId !== 'tab-assinatura') {
+        showToast('Sua assinatura está pendente. Acesse a aba Assinatura Mensal para regularizar.', 'error');
+        tabId = 'tab-assinatura';
+      }
+
       // 1. Ocultar todas as abas
       var tabs = document.querySelectorAll('.tab-content');
       for (var i = 0; i < tabs.length; i++) {
@@ -400,6 +406,9 @@
       </div>
       <div class="nav-item" onclick="showTab('tab-qrcode', this)">
         <span>📱</span> Gerador QR
+      </div>
+      <div class="nav-item" id="nav-assinatura" onclick="showTab('tab-assinatura', this)">
+        <span>💳</span> Assinatura Mensal
       </div>
     </nav>
     
@@ -1019,6 +1028,52 @@
       </div>
     </div>
 
+    <!-- TAB: ASSINATURA MENSAL -->
+    <div id="tab-assinatura" class="tab-content">
+      <div class="glass-card" style="max-width: 650px; margin: 0 auto;">
+        <h3 style="color: #fff; margin-bottom: 0.35rem; font-weight: 800; font-size: 1.2rem;">
+          💳 Assinatura Mensal & Pagamentos
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+          Mantenha sua assinatura ativa para garantir o acesso ininterrupto dos seus clientes aos cupons e sistema de sorteio.
+        </p>
+
+        <div id="assinatura-status-box" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.2rem; text-transform: uppercase; font-weight: 700;">Status Atual</div>
+            <strong id="assinatura-status-text" style="color: #10b981; font-size: 1.3rem;">Ativo ✅</strong>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.2rem;">Valor da Mensalidade</div>
+            <strong style="color: #fff; font-size: 1.1rem;">R$ 149,00</strong>
+          </div>
+        </div>
+
+        <h4 style="color: #fff; margin-bottom: 1rem; font-weight: 700; font-size: 0.95rem;">Opções de Pagamento</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          
+          <div class="payment-option-checkbox-card" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 1.25rem; cursor: pointer; border: 1px solid var(--tenant-primary); background: rgba(255,255,255,0.02);" onclick="simulatePayment('pix')">
+            <span style="font-size: 2rem; margin-bottom: 0.5rem;">💠</span>
+            <strong style="color: #fff; font-size: 0.9rem; margin-bottom: 0.25rem;">Pix Instantâneo</strong>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Aprovação na hora (QR Code)</span>
+          </div>
+
+          <div class="payment-option-checkbox-card" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 1.25rem; cursor: pointer;" onclick="simulatePayment('cartao')">
+            <span style="font-size: 2rem; margin-bottom: 0.5rem;">💳</span>
+            <strong style="color: #fff; font-size: 0.9rem; margin-bottom: 0.25rem;">Cartão de Crédito</strong>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Assinatura recorrente</span>
+          </div>
+
+          <div class="payment-option-checkbox-card" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 1.25rem; cursor: pointer;" onclick="simulatePayment('boleto')">
+            <span style="font-size: 2rem; margin-bottom: 0.5rem;">📄</span>
+            <strong style="color: #fff; font-size: 0.9rem; margin-bottom: 0.25rem;">Boleto Bancário</strong>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Vencimento em 3 dias</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- MODAL DE RECORTE INTERATIVO DE CAPA COM CENTRALIZAÇÃO AUTOMÁTICA -->
@@ -1094,6 +1149,7 @@
 
   <script>
     let activeSlug = 'medfarma';
+    let currentTenantObject = null;
     const defaultTenants = {
       medfarma: {
         id: 'comp-4',
@@ -1219,6 +1275,11 @@
 
     window.showTab = function(tabId, btn) {
       console.log('Navegando para aba:', tabId);
+
+      if (currentTenantObject && currentTenantObject.subscription_status === 'past_due' && tabId !== 'tab-assinatura') {
+        showToast('Sua assinatura está pendente. Regularize o pagamento para acessar.', 'error');
+        tabId = 'tab-assinatura';
+      }
 
       // 1. Ocultar todas as abas
       document.querySelectorAll('.tab-content').forEach(el => {
@@ -1458,8 +1519,20 @@
       }
 
       const tenant = allTenants[activeSlug] || allTenants['medfarma'];
+      currentTenantObject = tenant;
       if (tenant) {
         checkEmailConfirmation(tenant);
+        
+        const statusText = document.getElementById('assinatura-status-text');
+        if (statusText) {
+          if (tenant.subscription_status === 'past_due') {
+            statusText.textContent = 'Inadimplente ❌';
+            statusText.style.color = '#ef4444';
+          } else {
+            statusText.textContent = 'Ativo ✅';
+            statusText.style.color = '#10b981';
+          }
+        }
         if (document.getElementById('admin-company-name')) document.getElementById('admin-company-name').textContent = tenant.name || 'Empresa';
         if (document.getElementById('admin-company-niche')) document.getElementById('admin-company-niche').textContent = tenant.niche || 'Geral';
 
@@ -2539,6 +2612,36 @@
         toast.style.transform = 'translateY(120px)';
         toast.style.opacity = '0';
       }, 2400);
+    }
+    function simulatePayment(method) {
+      if (!currentTenantObject) return;
+      let msg = '';
+      if (method === 'pix') msg = 'Gerando QR Code PIX (Simulação gateway)';
+      if (method === 'cartao') msg = 'Abrindo Checkout de Cartão (Simulação)';
+      if (method === 'boleto') msg = 'Gerando Boleto Bancário (Simulação)';
+      
+      showToast(msg, 'success');
+      
+      // Simulate successful payment after 2 seconds
+      setTimeout(() => {
+        showToast('Pagamento confirmado com sucesso!', 'success');
+        currentTenantObject.subscription_status = 'active';
+
+        // Persist to localStorage for simulation
+        let customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}');
+        if (!customTenants[activeSlug]) customTenants[activeSlug] = {};
+        customTenants[activeSlug].subscription_status = 'active';
+        localStorage.setItem('bf_custom_tenants', JSON.stringify(customTenants));
+        
+        // Atualiza UI
+        const statusText = document.getElementById('assinatura-status-text');
+        if (statusText) {
+          statusText.textContent = 'Ativo ✅';
+          statusText.style.color = '#10b981';
+        }
+        
+        // Em um cenário real, isso atualizaria o banco de dados.
+      }, 2000);
     }
   </script>
 

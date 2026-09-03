@@ -274,6 +274,7 @@
               <th>Domínio SaaS</th>
               <th>Performance</th>
               <th>Plano</th>
+              <th>Pagamento</th>
               <th style="text-align: right;">Ações de Controle</th>
             </tr>
           </thead>
@@ -443,7 +444,8 @@
           });
         });
 
-        return { name, slug, niche, leads: leadsCount, qrScans, plan: 'Pro (R$ 149)', status: 'Ativo' };
+        const subStatus = custom.subscription_status || def.subscription_status || 'active';
+        return { name, slug, niche, leads: leadsCount, qrScans, plan: 'Pro (R$ 149)', status: 'Ativo', subscription_status: subStatus };
       });
 
       // Update Top Metrics
@@ -483,15 +485,21 @@
           </td>
           <td>
             <span style="color: #a78bfa; font-weight: 700;">${c.plan}</span><br>
-            <span style="color: var(--accent); font-size: 0.7rem;">● ${c.status}</span>
+            <span style="color: var(--accent); font-size: 0.7rem;">⚡ ${c.status}</span>
+          </td>
+          <td>
+            ${c.subscription_status === 'past_due' ? `<span style="color: #ef4444; font-weight: 700; font-size: 0.85rem;">Inadimplente ❌</span>` : `<span style="color: #10b981; font-weight: 700; font-size: 0.85rem;">Ativo ✅</span>`}
           </td>
           <td style="text-align: right;">
             <div style="display: flex; gap: 0.4rem; justify-content: flex-end;">
+              <button onclick="toggleCompanyPaymentStatus('${c.slug}')" class="btn-outline" style="color: ${c.subscription_status === 'past_due' ? '#10b981' : '#ef4444'}; border-color: ${c.subscription_status === 'past_due' ? 'rgba(16,185,129,0.4)' : 'rgba(239,68,68,0.4)'};" title="Liberar ou Bloquear">
+                ${c.subscription_status === 'past_due' ? '✅ Liberar' : '🚫 Bloquear'}
+              </button>
               <a href="../index.html?tenant=${c.slug}&src=qrcode" target="_blank" class="btn-outline" style="color: #f59e0b; border-color: rgba(245,158,11,0.4);" title="Testar QR Code Físico">
                 📱 QR Teste
               </a>
               <a href="empresa.html?tenant=${c.slug}&master=true" class="btn-outline" style="color: #a78bfa; border-color: rgba(167,139,250,0.4);">
-                🔑 Painel
+                👑 Painel
               </a>
             </div>
           </td>
@@ -555,6 +563,29 @@
         (l.tenantName && l.tenantName.toLowerCase().includes(q))
       );
       renderGlobalLeadsTable(filtered);
+    }
+
+    function toggleCompanyPaymentStatus(slug) {
+      const company = allCompaniesList.find(c => c.slug === slug);
+      if (!company) return;
+      
+      const newStatus = company.subscription_status === 'past_due' ? 'active' : 'past_due';
+      const action = newStatus === 'active' ? 'liberar' : 'bloquear';
+      
+      if(confirm(`Tem certeza que deseja ${action} a empresa ${company.name}?`)) {
+        company.subscription_status = newStatus;
+        
+        let customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}');
+        if (!customTenants[slug]) customTenants[slug] = {};
+        customTenants[slug].subscription_status = newStatus;
+        localStorage.setItem('bf_custom_tenants', JSON.stringify(customTenants));
+
+        // In a real scenario, this would update Supabase here:
+        // await supabaseClient.from('companies').update({subscription_status: newStatus}).eq('slug', slug);
+        
+        filterCompaniesTable();
+        showToast(`Empresa ${company.name} ${newStatus === 'active' ? 'liberada' : 'bloqueada'} com sucesso!`, newStatus === 'active' ? 'success' : 'error');
+      }
     }
 
     function openNewCompanyModal() {

@@ -138,11 +138,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Detect Tenant Slug from URL path or default to pizzariacentral
 function detectSlugAndLoadTenant() {
-  const path = window.location.pathname.replace('/', '').trim();
-  if (path && mockTenants[path]) {
-    currentTenant = mockTenants[path];
+  const urlParams = new URLSearchParams(window.location.search);
+  let slug = urlParams.get('tenant') || window.location.pathname.replace('/', '').replace('index.html', '').trim();
+  
+  // Mix in custom tenants from admin
+  let customTenants = {};
+  try { customTenants = JSON.parse(localStorage.getItem('bf_custom_tenants') || '{}'); } catch(e){}
+  
+  const allTenants = { ...mockTenants, ...customTenants };
+  
+  slug = slug.toLowerCase();
+  
+  if (slug && allTenants[slug]) {
+    currentTenant = allTenants[slug];
   } else {
-    currentTenant = mockTenants['pizzariacentral'];
+    currentTenant = allTenants['medfarma'] || mockTenants['pizzariacentral'];
+  }
+  
+  // Verifica bloqueio de assinatura
+  if (currentTenant.subscription_status === 'past_due') {
+    document.body.innerHTML = `
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:#000; color:#fff; text-align:center; padding: 2rem;">
+        <span style="font-size:3rem; margin-bottom:1rem;">⚠️</span>
+        <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color:#ef4444;">Sistema Temporariamente Indisponível</h2>
+        <p style="color: #94a3b8; font-size: 0.9rem;">O painel interativo desta empresa encontra-se suspenso.<br>Se você é o proprietário, acesse seu painel de administração para regularizar a assinatura.</p>
+      </div>
+    `;
+    throw new Error("Tenant bloqueado por inadimplência.");
   }
 }
 
